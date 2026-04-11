@@ -1,0 +1,33 @@
+# Environment & Credentials
+.env
+
+# IDE & Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# PHP
+vendor/
+composer.lock
+
+# Logs
+*.log
+error_log
+
+# Binary assets (keep tracked via Git LFS or exclude)
+*.pdf
+*.docx
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
