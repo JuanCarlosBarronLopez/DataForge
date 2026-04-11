@@ -119,11 +119,11 @@ cp .env.example .env
 ```
 
 3. **Inyectar credenciales (en `.env`):**
-Abre tu `.env` e impone exactamente las mangueras de base de tu servidor (generalmente User `root` y la Clave secreta vacía o con contraseña). No expongas este archivo a GitHub.
+Abre tu `.env` e impone las bases de tu servidor. No expongas este archivo a GitHub.
 ```ini
-DB_HOST=localhost
-DB_USER=root
-DB_PASS=1924pk77
+DB_HOST=localhosto_ip
+DB_USER=tu_usuario_db
+DB_PASS=tu_password_db
 ```
 
 4. **Encendido Automático:**
