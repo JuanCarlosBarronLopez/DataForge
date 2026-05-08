@@ -49,11 +49,28 @@ function installSystemDb(): bool
 {
     try {
         require_once __DIR__ . '/../database/db_functions.php';
-        $conn = getDbConnection(); // connect without specifying DB
+        
+        $dbExists = false;
+        try {
+            // 1. Try to connect directly to the SYSTEM_DB.
+            // On Cloud DBs (PlanetScale/TiDB), this is required and CREATE DATABASE is blocked.
+            $conn = getDbConnection(SYSTEM_DB);
+            $dbExists = true;
+        } catch (Exception $e) {
+            // 2. Fallback: try connecting without DB and creating it (for local XAMPP/Docker)
+            try {
+                $conn = getDbConnection(); 
+                $conn->query("CREATE DATABASE IF NOT EXISTS `" . SYSTEM_DB . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+                $conn->select_db(SYSTEM_DB);
+                $dbExists = true;
+            } catch (Exception $inner) {
+                error_log("Failed to create SYSTEM_DB: " . $inner->getMessage());
+            }
+        }
 
-        // Create system database
-        $conn->query("CREATE DATABASE IF NOT EXISTS `" . SYSTEM_DB . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-        $conn->select_db(SYSTEM_DB);
+        if (!$dbExists) {
+            return false;
+        }
 
         // Create users table
         $conn->query("CREATE TABLE IF NOT EXISTS `users` (
