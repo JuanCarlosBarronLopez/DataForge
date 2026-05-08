@@ -38,18 +38,30 @@ class Database
             return getDbConnection($dbName);
         }
 
-        \mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-
         $host = defined('DB_HOST') ? DB_HOST : Config::get('DB_HOST', 'localhost');
         $user = defined('DB_USER') ? DB_USER : Config::get('DB_USER', 'root');
         $pass = defined('DB_PASS') ? DB_PASS : Config::get('DB_PASS', '');
-        $port = defined('DB_PORT') ? (int) DB_PORT : (int) Config::get('DB_PORT', 3306);
+        $port = defined('DB_PORT') ? DB_PORT : Config::get('DB_PORT', 3306);
         $charset = defined('DB_CHARSET') ? DB_CHARSET : Config::get('DB_CHARSET', 'utf8mb4');
-
         $db = empty($dbName) ? "" : $dbName;
-        $conn = new \mysqli($host, $user, $pass, $db, $port);
-        $conn->set_charset($charset);
-        return $conn;
+
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+        try {
+            $conn = mysqli_init();
+            $flags = 0;
+            // Force SSL if connecting to an external cloud database
+            if ($host !== 'localhost' && $host !== '127.0.0.1' && $host !== 'db') {
+                $conn->ssl_set(NULL, NULL, NULL, NULL, NULL);
+                $flags = MYSQLI_CLIENT_SSL;
+            }
+
+            $conn->real_connect($host, $user, $pass, $db, (int)$port, NULL, $flags);
+            $conn->set_charset($charset);
+            return $conn;
+        } catch (\mysqli_sql_exception $e) {
+            throw new \Exception("Database connection failed: " . $e->getMessage());
+        }
     }
 
     /**

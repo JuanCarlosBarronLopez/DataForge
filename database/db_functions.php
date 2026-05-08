@@ -38,11 +38,19 @@ function getDbConnection(?string $dbName = null): mysqli
 
     try {
         $db = empty($dbName) ? "" : $dbName;
-        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, $db, (int) DB_PORT);
+        $conn = mysqli_init();
+        
+        $flags = 0;
+        // Si estamos conectándonos a un host externo, forzamos SSL (necesario para PlanetScale/TiDB)
+        if (DB_HOST !== 'localhost' && DB_HOST !== '127.0.0.1' && DB_HOST !== 'db') {
+            $conn->ssl_set(NULL, NULL, NULL, NULL, NULL);
+            $flags = MYSQLI_CLIENT_SSL;
+        }
+
+        $conn->real_connect(DB_HOST, DB_USER, DB_PASS, $db, (int) DB_PORT, NULL, $flags);
         $conn->set_charset(DB_CHARSET);
         return $conn;
     } catch (mysqli_sql_exception $e) {
-        // En lugar de ocultar el error local, lo mostramos para facilitar el debug si XAMPP usa otra clave o puerto
         throw new Exception("Error MySQL: " . $e->getMessage());
     }
 }
