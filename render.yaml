@@ -1,0 +1,44 @@
+# ============================================
+# DataForge — Render Blueprint
+# ============================================
+# Deploy: Connect repo to Render → Auto-detect this file
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: dataforge
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    healthCheckPath: /
+    envVars:
+      # ── Database (External MySQL — TiDB Cloud / PlanetScale) ──
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false
+      - key: DB_CHARSET
+        value: "utf8mb4"
+      # ── Application ──
+      - key: APP_ENV
+        value: "production"
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_NAME
+        value: "DataForge CRUD Manager"
+      - key: APP_VERSION
+        value: "3.2.0"
+      - key: SYSTEM_DB
+        value: "dataforge_system"
+      # ── Security ──
+      - key: RATE_LIMIT_STORAGE
+        value: "file"
+      - key: RATE_LIMIT_MAX
+        value: "60"
+      - key: RATE_LIMIT_WINDOW
+        value: "60"

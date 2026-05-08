@@ -1,0 +1,111 @@
+# ============================================
+# DataForge CRUD Manager — Docker Compose
+# ============================================
+# Services: PHP/Apache + MySQL 8.0 + phpMyAdmin + Redis
+#
+# Usage:
+#   docker compose up -d --build
+#   Open: http://localhost:8080 (DataForge)
+#         http://localhost:8081 (phpMyAdmin)
+
+services:
+  # ─── PHP Application ─────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dataforge-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:80"
+    volumes:
+      - .:/var/www/html
+      - ./uploads:/var/www/html/uploads
+      - ./logs:/var/www/html/logs
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-dataforge}
+      DB_PASS: ${DB_PASS:-dataforge_secret}
+      DB_CHARSET: utf8mb4
+      APP_ENV: ${APP_ENV:-development}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      APP_NAME: "DataForge CRUD Manager"
+      APP_VERSION: "3.2.0"
+      APP_URL: "http://localhost:${APP_PORT:-8080}"
+      SYSTEM_DB: ${SYSTEM_DB:-dataforge_system}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RATE_LIMIT_STORAGE: ${RATE_LIMIT_STORAGE:-file}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - dataforge-network
+
+  # ─── MySQL Database ──────────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: dataforge-db
+    restart: unless-stopped
+    ports:
+      - "${DB_EXTERNAL_PORT:-3307}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secret}
+      MYSQL_DATABASE: ${SYSTEM_DB:-dataforge_system}
+      MYSQL_USER: ${DB_USER:-dataforge}
+      MYSQL_PASSWORD: ${DB_PASS:-dataforge_secret}
+    volumes:
+      - dataforge-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_secret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - dataforge-network
+
+  # ─── phpMyAdmin ──────────────────────────────────────────────────────────
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: dataforge-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "${PMA_PORT:-8081}:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secret}
+      UPLOAD_LIMIT: 50M
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - dataforge-network
+
+  # ─── Redis (Rate Limiting & Cache) ───────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: dataforge-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    volumes:
+      - dataforge-redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 64mb --maxmemory-policy allkeys-lru
+    networks:
+      - dataforge-network
+
+# ─── Volumes ───────────────────────────────────────────────────────────────
+volumes:
+  dataforge-db-data:
+    driver: local
+  dataforge-redis-data:
+    driver: local
+
+# ─── Networks ──────────────────────────────────────────────────────────────
+networks:
+  dataforge-network:
+    driver: bridge

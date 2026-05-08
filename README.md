@@ -1,155 +1,369 @@
-# 🔷 DataForge CRUD Manager v3.1
+# 🔷 DataForge CRUD Manager v3.2
 
-[![PHP Version](https://img.shields.io/badge/PHP-8.0%2B-777BB4?style=flat-square&logo=php&logoColor=white)](https://php.net)
-[![MySQL](https://img.shields.io/badge/MySQL-5.7%2B-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://mysql.com)
+[![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=flat-square&logo=php&logoColor=white)](https://php.net)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://mysql.com)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://docker.com)
+[![PHPUnit](https://img.shields.io/badge/Tests-PHPUnit-3C9CD7?style=flat-square&logo=php&logoColor=white)](https://phpunit.de)
 [![License: MIT](https://img.shields.io/badge/License-MIT-06b6d4?style=flat-square)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Producci%C3%B3n-10b981?style=flat-square)]()
+[![Deploy](https://img.shields.io/badge/Deploy-Render-46E3B7?style=flat-square&logo=render&logoColor=white)](https://render.com)
+[![Security](https://img.shields.io/badge/Security-Hardened-10b981?style=flat-square&logo=shield&logoColor=white)]()
 
-**DataForge** ha evolucionado en su versión 3.1. Ya no es solo un gestor aislado, sino un **Ecosistema Multi-Usuario** altamente dinámico y profesional. Diseñado en PHP nativo, permite la manipulación relacional de bases de datos mediante identidades fortificadas, una estética visual inmersiva ("Glassmorphism" con 7 temas adaptables), y módulos completos de inyección de datos de prueba, manteniendo en todo rincón una tolerancia cero a fallas de seguridad.
+**DataForge** es un **ecosistema multi-usuario** profesional para la gestión completa de bases de datos MySQL. Construido en PHP nativo (sin frameworks), demuestra dominio de fundamentos: arquitectura modular, seguridad multicapa, dockerización completa, y testing automatizado.
 
----
-
-## ✨ Características Técnicas (Novedades v3.1)
-
-| Módulo | Especificación Técnica |
-|---------|-------------|
-| 🔐 **Identidad Fuerte** | Sistema de Onboarding en `/auth/` blindado por `PASSWORD_BCRYPT`. Toda operación en bases de datos requiere validación por `requireLogin()` y tokens CSRF activos por cada vista. |
-| 🏰 **Migraciones Automáticas** | Se auto-instala la base de datos `dataforge_system` de forma imperceptible, albergando en ella la bóveda de usuarios, variables de entorno como los temas gráficos, y el log central de auditoría. |
-| 🎨 **7 Temas Industriales** | Interfaz adaptada a diferentes industrias operativas *(Tech Dark, MediCare, FoodPro, IronForge, LexDesk, EduBase, ShopFlow)*. Los estilos CSS inyectan color y ambiente dinámicamente sobre todo el DOM. |
-| 🌗 **Motor Light / Dark Mode** | Soporte híbrido. Botonera en el Panel de Perfil inyecta la clase general `mode-light` logrando esquemas visuales en alto contraste (Soft-White mode) ideal para el trabajo diurno. |
-| 📸 **Avatares Interactivos** | Gestión nativa para la subida de fotografías JPG/PNG. Incluye Live-Preview asíncrono con JavaScript mediante `FileReader`, recorte geométrico integrado CSS, y renombramiento seguro vía Hashes `MD5`. |
-| 🗄️ **Bases de Datos Isoladas** | Motor subyacente para la manipulación y destrucción de bases de datos MySQL, protegidos por Zonas de Peligro nativas. |
-| 📊 **Diseñador DB** | Constructor visual de esquemas relacionales sin necesidad de comandos. Soporte estricto por menús de persiana para todos los tipos de datos nativos (INT, VARCHAR, TEXT, BOOLEAN, DATE, etc.). |
-| 🎯 **Conteo Matemático Exacto** | El panel de Dashboard migró su arquitectura de estimación por `information_schema` hacia un cálculo bruto garantizado por lecturas `SELECT COUNT(*)` exactas para cada iteración de tabla visible. |
-| 🧪 **Módulo de Data Injections** | Integra una semilla automatizada (`inyeccion_datos.php`) encargada de inyectar 3 tablas locales y métricas artificiales para poblar los Dashboards y poner a prueba los estreses del frontend sin quebrar sistemas reales de usuario. |
+> 🌐 **Demo en vivo:** [dataforge.onrender.com](https://dataforge.onrender.com) *(Configura tu URL aquí)*
 
 ---
 
-## 🏛️ Arquitectura de Software
+## 🖼️ Interfaz & Temas
 
-La arquitectura de ruteos internos detona siempre desde el Controlador (`index.php`) o los páneles de Auth. Utiliza fundamentos del patrón *Action-Domain-Responder (ADR)* evitando inyectar lógica de negocio en componentes visuales.
+DataForge incluye 7 temas visuales adaptados a diferentes industrias, todos con soporte para modo claro y oscuro. 
+
+![DataForge Demo Recording](img/demo.webp)
+
+| Tema | Industria | Preview |
+|------|-----------|---------|
+| 💻 **Tech Dark** | Tecnología & Desarrollo | Tema por defecto — Tonos cyan/violeta sobre fondo oscuro |
+| 🏥 **MediCare** | Salud & Medicina | Paleta de verdes suaves y blancos clínicos |
+| 🍽️ **FoodPro** | Restaurantes & Alimentos | Naranjas cálidos y tonos terrosos |
+| 🔧 **IronForge** | Ferretería & Construcción | Amarillos industriales y grises metálicos |
+| ⚖️ **LexDesk** | Servicios Legales | Azules formales y dorados sobrios |
+| 🎓 **EduBase** | Educación & Escuelas | Verdes académicos y azules institucionales |
+| 🛍️ **ShopFlow** | Retail & Comercio | Rosas vibrantes y violetas comerciales |
+
+---
+
+## ✨ Características Técnicas
+
+| Módulo | Especificación |
+|--------|---------------|
+| 🔐 **Autenticación** | Registro/login blindado por `PASSWORD_BCRYPT` (cost 12). Tokens CSRF por vista. Session cookies con `SameSite=Strict`, `HttpOnly`, `Secure`. |
+| 🏰 **Auto-Migración** | Base `dataforge_system` se crea automáticamente al primer registro. Upgrade scripts reactivos detectan y añaden columnas faltantes. |
+| 🎨 **7 Temas** | Glassmorphism + CSS Variables. Inyección dinámica de tema al DOM. Soporte Light/Dark mode. |
+| 🗄️ **Gestión DB** | Crear, listar, eliminar bases de datos MySQL. Protección contra eliminación de DBs del sistema. |
+| 📊 **Diseñador de Tablas** | Constructor visual con soporte para INT, VARCHAR, DECIMAL, TEXT, DATE, DATETIME, BOOLEAN. |
+| 📝 **CRUD Completo** | Formularios dinámicos auto-generados. Prepared statements al 100%. Paginación. |
+| 📸 **Avatares** | Upload con preview async (FileReader). Renombramiento seguro via MD5. Validación de extensión. |
+| 🧪 **Data Seeder** | Módulo de inyección de datos de prueba para poblar dashboards. |
+| 🐳 **Docker** | Dockerfile + Compose con PHP, MySQL, phpMyAdmin, Redis. Soporte para Render/Railway. |
+| 🧪 **Tests** | PHPUnit con suites para Auth, CRUD, y Seguridad. |
+
+---
+
+## 🏛️ Arquitectura
 
 ```mermaid
 graph TD
-    A[auth/login.php — Ingreso Seguro] --> B[dashboard.php — Core Panel]
-    B --> C[database/databases.php]
-    C --> D[tables/view_db.php]
-    D --> E[records/records.php]
+    subgraph Docker["🐳 Docker Compose"]
+        APP["PHP 8.2 + Apache"]
+        DB["MySQL 8.0"]
+        PMA["phpMyAdmin"]
+        REDIS["Redis 7"]
+    end
 
-    B --> P1[account/profile.php — Identidad]
-    B --> P2[auth/logout.php]
+    subgraph App["📦 Aplicación"]
+        CFG["config.php"]
+        SEC["security.php<br/>CSP + Rate Limit"]
+        
+        subgraph Classes["src/ — Clases OOP"]
+            CC["Config.php"]
+            CA["Auth.php"]
+            CD["Database.php"]
+            CR["CRUD.php"]
+        end
+        
+        subgraph Auth["auth/ — Autenticación"]
+            LOGIN["login.php"]
+            REG["register.php"]
+            AF["auth_functions.php"]
+        end
+        
+        subgraph Core["CRUD — Operaciones"]
+            DBS["database/"]
+            TBL["tables/"]
+            REC["records/"]
+        end
+        
+        DASH["dashboard.php"]
+        PROF["account/profile.php"]
+    end
 
-    C --> C1[crear_db.php]
-    C --> C2[eliminar_db.php]
+    APP --> DB
+    APP --> REDIS
+    PMA --> DB
 
-    D --> D1[crear_tabla.php / from_db]
-    D --> D2[eliminar_tabla.php]
-    D --> D3[eliminar_columna.php]
+    CFG --> SEC
+    CFG --> Classes
+    LOGIN --> AF
+    REG --> AF
+    DASH --> DBS
+    DBS --> TBL
+    TBL --> REC
 
-    E --> E1[crear_registro.php]
-    E --> E2[modificar_registro.php]
+    style Docker fill:#1e293b,color:#e2e8f0,stroke:#3b82f6
+    style Classes fill:#1e1b4b,color:#c4b5fd,stroke:#8b5cf6
+    style Auth fill:#1a2e05,color:#bef264,stroke:#65a30d
+    style Core fill:#1c1917,color:#fbbf24,stroke:#d97706
+```
 
-    F[config.php / db_functions] --> B
-    F --> C
-    F --> D
+### Flujo de Seguridad
 
-    style A fill:#8b5cf6,color:#fff
-    style B fill:#06b6d4,color:#0a0e1a
-    style P1 fill:#10b981,color:#0a0e1a
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant S as Security.php
+    participant A as Auth
+    participant D as Database
+
+    U->>S: HTTP Request
+    S->>S: Rate Limit Check
+    alt Límite excedido
+        S-->>U: 429 Too Many Requests
+    end
+    S->>S: CSP Headers + Helmet
+    U->>A: POST /auth/login.php
+    A->>A: Validate CSRF Token
+    A->>A: Sanitize Input
+    A->>D: Prepared Statement (SELECT)
+    D-->>A: User Data
+    A->>A: password_verify(bcrypt)
+    A-->>U: Session + Redirect
 ```
 
 ---
 
-## 📁 Estructura Completa del Proyecto
+## 🚀 Instalación Rápida (Docker)
+
+### Requisitos
+- [Docker Desktop](https://docker.com/get-started) instalado y corriendo.
+
+### 3 comandos para empezar:
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/JuanCarlosBarronLopez/DataForge.git
+cd DataForge
+
+# 2. Configurar variables de entorno
+cp .env.example .env
+
+# 3. Levantar todo
+docker compose up -d --build
+```
+
+**¡Listo!** Abre tu navegador:
+- 🌐 **DataForge:** [http://localhost:8080](http://localhost:8080)
+- 🗄️ **phpMyAdmin:** [http://localhost:8081](http://localhost:8081)
+
+### Servicios incluidos
+
+| Servicio | Puerto | Descripción |
+|----------|--------|-------------|
+| DataForge App | `8080` | Aplicación PHP + Apache |
+| MySQL 8.0 | `3307` | Base de datos (puerto externo) |
+| phpMyAdmin | `8081` | Administrador visual de MySQL |
+| Redis 7 | `6380` | Rate limiting & caché |
+
+---
+
+## 🖥️ Instalación Legacy (XAMPP)
+
+Si prefieres el entorno tradicional sin Docker:
+
+1. **Requisitos:** Apache 2.4+, PHP 8.0+, MySQL 5.7+
+2. **Clonar al htdocs:**
+```bash
+git clone https://github.com/JuanCarlosBarronLopez/DataForge.git
+cp -r DataForge C:/xampp/htdocs/dataforge
+cd C:/xampp/htdocs/dataforge
+cp .env.example .env
+```
+3. **Editar `.env`** con tus credenciales de MySQL
+4. **Abrir** `http://localhost/dataforge/` y crear una cuenta
+
+---
+
+## ☁️ Deploy en Render (Producción)
+
+### Paso 1 — Base de datos MySQL externa (TiDB Cloud)
+
+DataForge necesita una base de datos MySQL. Render no ofrece MySQL en su free tier, así que usamos **TiDB Cloud** (gratuito):
+
+1. Crea cuenta en [tidbcloud.com](https://tidbcloud.com)
+2. Crea un cluster **Serverless** (gratuito)
+3. Obtén las credenciales de conexión:
+   - Host: `gateway01.xx.tidbcloud.com`
+   - Puerto: `4000`
+   - Usuario: `xxxxx.root`
+   - Password: `tu_password`
+   - Database: `dataforge_system`
+
+### Paso 2 — Deploy en Render
+
+1. Crea cuenta en [render.com](https://render.com)
+2. **New → Blueprint** → Conecta tu repositorio GitHub
+3. Render detectará el `render.yaml` automáticamente
+4. En el dashboard de Render, configura las variables de entorno:
+
+```
+DB_HOST=gateway01.xx.tidbcloud.com
+DB_PORT=4000
+DB_USER=xxxxx.root
+DB_PASS=tu_password_tidb
+SYSTEM_DB=dataforge_system
+```
+
+5. Deploy automático al hacer push a `main`
+
+### Paso 3 — Verificar
+
+- Tu app estará en `https://dataforge.onrender.com`
+- El primer acceso puede tardar ~30s (cold start del free tier)
+
+> ⚠️ **Nota:** Los archivos subidos (avatares) se pierden en cada redeploy del free tier. Para producción real, usar almacenamiento externo (S3, Cloudinary).
+
+---
+
+## 🔒 Seguridad
+
+DataForge implementa **7 capas de seguridad** transversal:
+
+### 1. Tokens CSRF
+Cada formulario inyecta un token criptográfico (`random_bytes(32)`) que se valida con `hash_equals()` y se invalida después de cada uso.
+
+### 2. Prepared Statements (100%)
+Todas las operaciones de datos usan `$stmt->bind_param()`. Los nombres de tablas/databases se validan con regex (`/^[a-zA-Z0-9_]+$/`) + `real_escape_string()`.
+
+### 3. Password Hashing
+`PASSWORD_BCRYPT` con cost 12. Verificación con `password_verify()`. Nunca se almacena contraseña en texto plano ni en sesión.
+
+### 4. Security Headers
+```
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-XSS-Protection: 1; mode=block
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Strict-Transport-Security: max-age=31536000 (producción)
+Content-Security-Policy: default-src 'self'; ...
+X-Permitted-Cross-Domain-Policies: none
+Cross-Origin-Opener-Policy: same-origin
+```
+
+### 5. Rate Limiting
+- **Global:** 60 requests/minuto por IP
+- **Login:** 5 intentos/5 minutos por IP
+- Backend: File-based (default) o Redis (producción)
+- Headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`
+- Respuesta: `429 Too Many Requests` con `Retry-After`
+
+### 6. Session Hardening
+```php
+session_set_cookie_params([
+    'secure'   => true,   // Solo HTTPS
+    'httponly'  => true,   // Sin acceso JS
+    'samesite'  => 'Strict' // Anti-CSRF cookies
+]);
+```
+
+### 7. Input Sanitization
+Funciones centralizadas `sanitizeInput()`, `sanitizeArray()`, `sanitizeDbIdentifier()` con `htmlspecialchars()`, `strip_tags()`, y validación regex.
+
+---
+
+## 🧪 Tests
+
+```bash
+# Instalar dependencias de testing
+composer install
+
+# Ejecutar todos los tests
+composer test
+
+# Ejecutar con Docker (recomendado)
+docker compose up -d
+docker compose exec app vendor/bin/phpunit
+```
+
+### Suites de tests
+
+| Suite | Archivo | Tests |
+|-------|---------|-------|
+| **Auth** | `tests/AuthTest.php` | Registro, login, CSRF, sesiones, hashing, temas |
+| **CRUD** | `tests/CRUDTest.php` | Bases de datos, tablas, registros (Create/Read/Update/Delete) |
+| **Security** | `tests/SecurityTest.php` | Sanitización, rate limiting, validación de identificadores |
+
+---
+
+## 📁 Estructura del Proyecto
 
 ```
 dataforge/
-├── config.php               # Singleton de configuración (.env loader)
-├── .env.example             # Plantilla de variables de entorno estático
-├── dashboard.php            # Panel principal Post-Login
-├── index.php                # Receptor (Landing route)
-├── documentacion.php        # Manuales de integración de la plataforma
-├── inyeccion_datos.php      # [NUEVO] Seeder de Mock-Data local.
-├── sobre_nosotros.php       # Información de Equipo y Branding.
-├── themes.css / style.css   # [UPDATE] Design System dinámico con mutaciones visuales
+├── 🐳 Dockerfile              # Imagen PHP 8.2 + Apache
+├── 🐳 docker-compose.yml      # PHP + MySQL + phpMyAdmin + Redis
+├── 🐳 docker/                 # Configs Docker (apache.conf, entrypoint.sh)
+├── ☁️  render.yaml             # Blueprint para deploy en Render
 │
-├── account/                 # Dominio: Datos de Usuario y UX
-│   ├── profile.php          # Frontend Interactivo (Avatares, Light Switches)
-│   ├── update_profile.php   # Interceptor Hasheador de Fotografías de perfil
-│   └── delete_account.php   # Sistema Purga de cuenta (Danger Zone)
+├── ⚙️  config.php              # Configuración centralizada (.env loader)
+├── 📄 .env.example             # Template de variables de entorno
 │
-├── auth/                    # Dominio: Middleware & Security Core
-│   ├── auth_functions.php   # Rutinas de BCRYPT y Migración Automática de Tablas
-│   ├── login.php / logout.php # Portal de acceso de cuentas
-│   └── onboarding.php       # Frontend visual para inyectar industria y preferencias
+├── 🏠 index.php                # Landing page
+├── 📊 dashboard.php            # Panel principal post-login
+├── 📖 documentacion.php        # Documentación integrada
+├── 🧪 inyeccion_datos.php      # Seeder de datos de prueba
 │
-├── includes/                # Templates y Micro-Componentes DRy
-│   ├── header.php           # Inyecta los "CSS Modes" dinámicamente al DOM visual global
-│   ├── footer.php           # Scripts globales anexos (Cierres de HTML)
-│   ├── flash.php            # Enrutador asíncrono de Toast Notifications elegantes
-│   └── csrf.php             # Constructor de semilas para mitigar ataques falsificados
+├── src/                        # 🏗️ Clases OOP (Refactor v3.2)
+│   ├── autoload.php            # PSR-4 autoloader
+│   ├── Config.php              # Gestión de configuración
+│   ├── Auth.php                # Autenticación & sesiones
+│   ├── Database.php            # Conexiones & gestión de DBs
+│   └── CRUD.php                # Operaciones de tablas & registros
 │
-├── database/, tables/, records/  # Dominio Original CRUD (Constructores y Operaciones)
+├── auth/                       # 🔐 Autenticación
+│   ├── auth_functions.php      # Funciones core (bcrypt, migraciones)
+│   ├── login.php / register.php
+│   ├── onboarding.php          # Selección de tema inicial
+│   └── logout.php
 │
-└── uploads/                 # Storage
-    └── avatars/             # Persistencia física de imágenes subidas por los usuarios.
+├── includes/                   # 🧩 Componentes compartidos
+│   ├── header.php / footer.php # Templates HTML
+│   ├── csrf.php                # Protección CSRF
+│   ├── flash.php               # Toast notifications
+│   └── security.php            # CSP + Rate Limiting + Sanitización
+│
+├── database/                   # 🗄️ Gestión de bases de datos
+├── tables/                     # 📊 Gestión de tablas
+├── records/                    # 📝 Gestión de registros
+├── account/                    # 👤 Perfil de usuario
+│
+├── tests/                      # 🧪 PHPUnit tests
+│   ├── AuthTest.php
+│   ├── CRUDTest.php
+│   └── SecurityTest.php
+│
+├── style.css / themes.css      # 🎨 Design system + 7 temas
+└── img/                        # 🖼️ Assets estáticos
 ```
 
 ---
 
-## 🚀 Despliegue en Entorno Local
+## 🛠️ Stack Tecnológico
 
-### Requisitos Mínimos
-- Entorno: Apache 2.4+ (Con `mod_rewrite` si aplica parametrización).
-- Backend Exec: **PHP 8.0+**
-- DB Server: MySQL 5.7+ / MariaDB 10.4+  *(Ej. nativos de XAMPP / MAMP).*
-
-### Instalación a Prueba de Balas
-
-1. **Clonar e inyectar al servidor local:**
-```bash
-git clone https://github.com/JuanCarlosBarronLopez/DataForge.git
-cp -r DataForge C:/xampp/htdocs/dataforge_v3
-```
-
-2. **Copiar credenciales de entorno:**
-```bash
-cd C:/xampp/htdocs/dataforge_v3
-cp .env.example .env
-```
-
-3. **Inyectar credenciales (en `.env`):**
-Abre tu `.env` e impone las bases de tu servidor. No expongas este archivo a GitHub.
-```ini
-DB_HOST=localhosto_ip
-DB_USER=tu_usuario_db
-DB_PASS=tu_password_db
-```
-
-4. **Encendido Automático:**
-Navega vía navegador a `http://localhost/dataforge_v3/` y haz clic en "Crear Cuenta". 
-> **La Magia Pasa por Debajo**: Date de Alta y de forma invisible se lanzará el generador nativo que levantará la base secreta de `dataforge_system` para ti.
-
-5. **Poblar Métricas Pruebas (Opcional):**
-Navega localmente por url a `http://localhost/dataforge_v3/inyeccion_datos.php`. Al correrla una sola vez, este autómata creará y llenará 3 bases de datos colosales de relleno para que el panel luzca exactamente como la demo oficial y puedas hacerle CRUD-Testing desde el minuto uno.
+| Capa | Tecnología |
+|------|-----------|
+| **Backend** | PHP 8.2 nativo (sin frameworks) |
+| **Base de datos** | MySQL 8.0 |
+| **Frontend** | HTML5, CSS3 (Glassmorphism), JavaScript vanilla |
+| **Contenedores** | Docker + Docker Compose |
+| **Testing** | PHPUnit 10 |
+| **CI/CD** | Render (auto-deploy desde GitHub) |
+| **Cache/Rate Limit** | Redis 7 (opcional, fallback a filesystem) |
 
 ---
 
-## 🔒 Estándares y Muros de Seguridad Transversal
+## 📄 Licencia
 
-El protocolo del ecosistema en DataForge dictamina que *"Validar Siempre y No Confiar Nunca"* es la única verdad:
-
-- **Tokens Descartables (CSRF):** Cualquier inyección que pueda escribir bases o borrar registros debe adjuntar un token numérico impreso en las sombras que solo existe por 1 segundo hasta que la sesión muere.
-- **Parametrización Defensiva (Prepared Statements):** El 100% de los controladores (`record_functions.php` y anexos) emplean `stmt->bind_param` cortando de tajo violaciones o brechas de "Inyección SQL` clásicas de la vieja escuela PHP.
-- **Neutralización XSS Front-End:** Bloqueo de ejecuciones dinámicas mediante parseo directo al inyectar elementos visuales sobre los `<tables>` y `href` en las variables de escape usando `htmlspecialchars()`.
-- **Cierre Predictivo Mutante:** Funciona sin comandos manuales. Si te mueves entre branches desactualizadas o la DataBase se desfasa, sus funciones como `installSystemDb()` realizan un chequeo asíncrono y reconstruyen variables nulas / inyectan columnas olvidadas automáticas en tu MySQL de forma reactiva.
-
----
-
-## 👥 Equipo de Arquitectura Científica
-
-La creación y mantenimiento de ecosistemas limpios, modulares y de alto rendimiento.
+Este proyecto está bajo la [Licencia MIT](LICENSE).
 
 <p align="center">
-  Construido por ingenieros de vanguardia en <strong>Raju Technology</strong>. <br> "Diseccionando el ruido transaccional a través de infraestructuras vítreas de frontera".
+  Construido por <strong>Raju Technology</strong>
 </p>

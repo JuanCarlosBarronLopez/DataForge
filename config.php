@@ -8,13 +8,25 @@
  * or falls back to `.env.example` defaults.
  *
  * @package  DataForge
- * @version  3.0.0
+ * @version  3.2.0
  * @author   Raju Technology
  * @license  MIT
  */
 
-// Start session if not already started (required for flash messages & CSRF)
+// ─── Secure Session Configuration ──────────────────────────────────────────
 if (session_status() === PHP_SESSION_NONE) {
+    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+             || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'domain'   => '',
+        'secure'   => $isSecure,
+        'httponly'  => true,
+        'samesite'  => 'Strict',
+    ]);
+
     session_start();
 }
 
@@ -41,6 +53,21 @@ if (file_exists($envPath)) {
     }
 }
 
+// ─── Parse MYSQL_URL for cloud providers (TiDB, PlanetScale, etc.) ─────────
+$mysqlUrl = $_ENV['MYSQL_URL'] ?? getenv('MYSQL_URL') ?: '';
+if (!empty($mysqlUrl)) {
+    $parsed = parse_url($mysqlUrl);
+    if ($parsed !== false) {
+        $_ENV['DB_HOST'] = $parsed['host'] ?? 'localhost';
+        $_ENV['DB_PORT'] = (string) ($parsed['port'] ?? 3306);
+        $_ENV['DB_USER'] = $parsed['user'] ?? 'root';
+        $_ENV['DB_PASS'] = $parsed['pass'] ?? '';
+        if (!empty($parsed['path'])) {
+            $_ENV['SYSTEM_DB'] = ltrim($parsed['path'], '/');
+        }
+    }
+}
+
 // ─── Database Constants ────────────────────────────────────────────────────
 define('DB_HOST', $_ENV['DB_HOST'] ?? 'localhost');
 define('DB_PORT', $_ENV['DB_PORT'] ?? '3306');
@@ -52,7 +79,7 @@ define('DB_CHARSET', $_ENV['DB_CHARSET'] ?? 'utf8mb4');
 define('APP_ENV', $_ENV['APP_ENV'] ?? 'development');
 define('APP_DEBUG', filter_var($_ENV['APP_DEBUG'] ?? true, FILTER_VALIDATE_BOOLEAN));
 define('APP_NAME', $_ENV['APP_NAME'] ?? 'DataForge CRUD Manager');
-define('APP_VERSION', $_ENV['APP_VERSION'] ?? '3.0.0');
+define('APP_VERSION', $_ENV['APP_VERSION'] ?? '3.2.0');
 define('APP_URL', $_ENV['APP_URL'] ?? 'http://localhost/dataforge');
 define('SYSTEM_DB', $_ENV['SYSTEM_DB'] ?? 'dataforge_system');
 
@@ -70,6 +97,11 @@ define('LOGS_PATH', __DIR__ . '/logs');
 if (!is_dir(LOGS_PATH)) {
     mkdir(LOGS_PATH, 0750, true);
     file_put_contents(LOGS_PATH . '/.htaccess', 'Deny from all');
+}
+
+// ─── Load Autoloader for Classes ───────────────────────────────────────────
+if (file_exists(__DIR__ . '/src/autoload.php')) {
+    require_once __DIR__ . '/src/autoload.php';
 }
 
 // ─── Error Reporting ───────────────────────────────────────────────────────
@@ -92,3 +124,9 @@ header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
 if (APP_ENV !== 'development') {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 }
+
+// ─── Load Security Middleware (CSP, Rate Limiting) ─────────────────────────
+require_once __DIR__ . '/includes/security.php';
+applySecurityHeaders();
+applyRateLimit();
+cleanupRateLimitFiles();

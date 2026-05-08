@@ -1,0 +1,44 @@
+# Version control
+.git
+.gitignore
+
+# IDE & Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Environment (will be injected via Docker env vars)
+.env
+
+# Dependencies (rebuilt in container)
+vendor/
+node_modules/
+
+# Logs (created fresh in container)
+logs/
+
+# Documentation artifacts
+docs/
+*.docx
+*.pdf
+documentoProyectoIntegrador_RAJU.docx
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker files (no need to copy into image)
+docker-compose.yml
+docker-compose.override.yml
+
+# Tests (not needed in production image)
+tests/
+phpunit.xml
+
+# Temp files
+*.tmp
+*.bak
+*.cache
+.phpunit.result.cache
