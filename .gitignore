@@ -15,13 +15,14 @@
 Thumbs.db
 desktop.ini
 
-# PHP
+# PHP / Composer
 vendor/
 composer.lock
 
 # Logs
 *.log
 error_log
+logs/rate_limits/
 
 # Binary assets (keep tracked via Git LFS or exclude)
 *.pdf
@@ -31,3 +32,15 @@ error_log
 *.tmp
 *.bak
 *.cache
+
+# PHPUnit
+.phpunit.cache/
+.phpunit.result.cache
+
+# User uploads (generated at runtime)
+uploads/avatars/*
+!uploads/avatars/.gitkeep
+
+# Docker volumes (local only)
+dataforge-db-data/
+dataforge-redis-data/

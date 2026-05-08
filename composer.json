@@ -1,0 +1,27 @@
+{
+    "name": "raju-technology/dataforge",
+    "description": "DataForge CRUD Manager — Professional MySQL management system",
+    "type": "project",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "DataForge\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DataForge\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": ">=8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test:coverage": "phpunit --coverage-text"
+    }
+}

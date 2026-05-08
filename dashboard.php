@@ -35,7 +35,8 @@ foreach ($dbSample as $dbName) {
         if ($tablesRes) {
             while ($tRow = $tablesRes->fetch_row()) {
                 $tName = $tRow[0];
-                $countRes = $conn->query("SELECT COUNT(*) as exact_total FROM `$tName`");
+                $safeTName = $conn->real_escape_string($tName);
+                $countRes = $conn->query("SELECT COUNT(*) as exact_total FROM `{$safeTName}`");
                 if ($countRes) {
                     $totalRows += (int) $countRes->fetch_assoc()['exact_total'];
                 }
