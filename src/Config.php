@@ -52,7 +52,11 @@ class Config
                     [$key, $value] = explode('=', $line, 2);
                     $key = trim($key);
                     $value = trim($value, " \t\n\r\0\x0B\"'");
-                    self::$values[$key] = $value;
+                    
+                    // Don't overwrite if it exists in environment (e.g. from Render)
+                    if (getenv($key) === false && !isset($_SERVER[$key])) {
+                        self::$values[$key] = $value;
+                    }
                 }
             }
         }

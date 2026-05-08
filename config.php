@@ -47,8 +47,12 @@ if (file_exists($envPath)) {
             [$key, $value] = explode('=', $line, 2);
             $key = trim($key);
             $value = trim($value, " \t\n\r\0\x0B\"'");
-            $_ENV[$key] = $value;
-            putenv("{$key}={$value}");
+            
+            // Only set if not already present in environment (e.g. from Render)
+            if (getenv($key) === false && !isset($_SERVER[$key])) {
+                $_ENV[$key] = $value;
+                putenv("{$key}={$value}");
+            }
         }
     }
 }
@@ -68,20 +72,29 @@ if (!empty($mysqlUrl)) {
     }
 }
 
+// ─── Helper function for environment variables ──────────────────────────────
+function getEnvVal(string $key, $default = '') {
+    if (isset($_ENV[$key]) && $_ENV[$key] !== '') return $_ENV[$key];
+    $val = getenv($key);
+    if ($val !== false && $val !== '') return $val;
+    if (isset($_SERVER[$key]) && $_SERVER[$key] !== '') return $_SERVER[$key];
+    return $default;
+}
+
 // ─── Database Constants ────────────────────────────────────────────────────
-define('DB_HOST', $_ENV['DB_HOST'] ?? 'localhost');
-define('DB_PORT', $_ENV['DB_PORT'] ?? '3306');
-define('DB_USER', $_ENV['DB_USER'] ?? 'root');
-define('DB_PASS', $_ENV['DB_PASS'] ?? '');
-define('DB_CHARSET', $_ENV['DB_CHARSET'] ?? 'utf8mb4');
+define('DB_HOST', getEnvVal('DB_HOST', 'localhost'));
+define('DB_PORT', getEnvVal('DB_PORT', '3306'));
+define('DB_USER', getEnvVal('DB_USER', 'root'));
+define('DB_PASS', getEnvVal('DB_PASS', ''));
+define('DB_CHARSET', getEnvVal('DB_CHARSET', 'utf8mb4'));
 
 // ─── Application Constants ────────────────────────────────────────────────
-define('APP_ENV', $_ENV['APP_ENV'] ?? 'development');
-define('APP_DEBUG', filter_var($_ENV['APP_DEBUG'] ?? true, FILTER_VALIDATE_BOOLEAN));
-define('APP_NAME', $_ENV['APP_NAME'] ?? 'DataForge CRUD Manager');
-define('APP_VERSION', $_ENV['APP_VERSION'] ?? '3.2.0');
-define('APP_URL', $_ENV['APP_URL'] ?? 'http://localhost/dataforge');
-define('SYSTEM_DB', $_ENV['SYSTEM_DB'] ?? 'dataforge_system');
+define('APP_ENV', getEnvVal('APP_ENV', 'development'));
+define('APP_DEBUG', filter_var(getEnvVal('APP_DEBUG', true), FILTER_VALIDATE_BOOLEAN));
+define('APP_NAME', getEnvVal('APP_NAME', 'DataForge CRUD Manager'));
+define('APP_VERSION', getEnvVal('APP_VERSION', '3.2.0'));
+define('APP_URL', getEnvVal('APP_URL', 'http://localhost/dataforge'));
+define('SYSTEM_DB', getEnvVal('SYSTEM_DB', 'dataforge_system'));
 
 // ─── Path Constants ────────────────────────────────────────────────────────
 define('ROOT_PATH', __DIR__);
