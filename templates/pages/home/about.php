@@ -54,7 +54,7 @@ use DataForge\Support\Url;
         <div class="panel__body">
             <div class="feature-list">
                 <article class="feature">
-                    <h3 class="feature__title">PHP 8.4 y MySQL 8.4</h3>
+                    <h3 class="feature__title">PHP 8.5 y MySQL 8.4</h3>
                     <p class="feature__text">
                         PHP nativo, sin framework, con PDO y consultas parametrizadas. MySQL 8.4 es la version de
                         soporte prolongado.

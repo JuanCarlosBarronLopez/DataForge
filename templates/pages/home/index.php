@@ -23,7 +23,7 @@ use DataForge\Support\Url;
             <a class="btn btn--secondary" href="<?= Url::login() ?>">Ya tengo una cuenta</a>
         </div>
         <p class="small muted" style="margin-top:1rem">
-            Proyecto academico en equipo de la UTSJR. PHP 8.4, MySQL 8.4, sin frameworks.
+            Proyecto academico en equipo de la UTSJR. PHP 8.5, MySQL 8.4, sin frameworks.
         </p>
     </div>
 

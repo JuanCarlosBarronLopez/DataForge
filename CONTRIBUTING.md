@@ -7,7 +7,7 @@ bienvenidas, con una condicion: **cada cambio llega con su prueba**.
 
 ## Requisitos
 
-- PHP 8.4 o superior con las extensiones `pdo_mysql` y `gd`.
+- PHP 8.5 o superior con las extensiones `pdo_mysql` y `gd`.
 - Composer 2.
 - MySQL 8.4 (opcional, solo para las pruebas de integracion).
 

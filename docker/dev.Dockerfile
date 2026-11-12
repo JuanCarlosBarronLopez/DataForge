@@ -6,7 +6,7 @@
 #   docker run --rm -v "$(pwd)":/app -w /app dataforge-dev composer install
 #   docker run --rm -v "$(pwd)":/app -w /app dataforge-dev composer check
 
-FROM php:8.4-cli
+FROM php:8.5-cli
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends unzip libzip-dev \

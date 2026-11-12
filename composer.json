@@ -5,7 +5,7 @@
     "license": "MIT",
     "keywords": ["php", "mysql", "docker", "phpunit", "csrf", "rate-limiting", "redis", "crud"],
     "require": {
-        "php": ">=8.4",
+        "php": ">=8.5",
         "ext-ctype": "*",
         "ext-json": "*",
         "ext-mbstring": "*",

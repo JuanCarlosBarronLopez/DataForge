@@ -31,11 +31,16 @@ Reescritura completa del nucleo. La version 3.2 sigue disponible en el historial
 
 ### Cambiado
 
+- **PHP 8.5.12** como version de ejecucion y requisito minimo: `composer.json` exige
+  `>=8.5`. Es la estable mas reciente publicada por el proyecto PHP e incluye las
+  correcciones de seguridad de octubre y noviembre de 2026. El analisis estatico apunta a
+  `phpVersion: 80500` y la CI ejecuta la suite sobre 8.5.
+- `actions/checkout` pasa de v4 a v7 en la integracion continua.
 - MySQLi por PDO con `ATTR_EMULATE_PREPARES => false`.
 - Sesiones en `storage/framework/sessions`, con regeneracion del identificador, tiempo
   muerto y duracion maxima.
 - Contrasenas con Argon2id y recalculo de hashes antiguos.
-- Contenedores en PHP 8.4 y MySQL 8.4, con script de inicializacion que concede los
+- Contenedores en PHP 8.5 y MySQL 8.4, con script de inicializacion que concede los
   permisos `CREATE` y `DROP` al usuario de la aplicacion.
 - Interfaz redisenada: se retiraron los emojis, los degradados y los patrones decorativos.
 

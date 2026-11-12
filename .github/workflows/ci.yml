@@ -24,7 +24,7 @@ jobs:
       - name: Preparar PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.5'
           extensions: pdo_mysql, gd, mbstring
           coverage: none
 
@@ -71,7 +71,7 @@ jobs:
       - name: Preparar PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.5'
           extensions: pdo_mysql, gd, mbstring
           coverage: none
 
@@ -82,7 +82,6 @@ jobs:
         run: vendor/bin/phpunit
 
       - name: Guardar el informe de cobertura
-        if: matrix.php == '8.4'
         continue-on-error: true
         run: vendor/bin/phpunit --coverage-clover=build/coverage.xml --coverage-text
 

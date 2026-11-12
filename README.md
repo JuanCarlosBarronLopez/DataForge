@@ -4,7 +4,7 @@
 
 **DataForge is a multi-user web console for MySQL: create databases, design tables and work with records from the browser.**
 **Each account only reaches the databases it owns, and every change is written to an audit log.**
-**Plain PHP 8.4 with PDO, MySQL 8.4, PHPUnit, PHPStan and Docker Compose: no framework, no ORM.**
+**Plain PHP 8.5 with PDO, MySQL 8.4, PHPUnit, PHPStan and Docker Compose: no framework, no ORM.**
 
 ---
 
@@ -79,7 +79,7 @@ El detalle de cada decisión está en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.m
 
 | Capa | Tecnología |
 |---|---|
-| Lenguaje | PHP 8.4 (`declare(strict_types=1)` en todo el código) |
+| Lenguaje | PHP 8.5 (`declare(strict_types=1)` en todo el código) |
 | Base de datos | MySQL 8.4 LTS sobre PDO con consultas parametrizadas reales |
 | Frontend | HTML5, CSS3 y JavaScript sin dependencias ni CDN |
 | Tiempo real | Server-Sent Events sobre HTTP nativo |
@@ -120,7 +120,7 @@ docker compose exec app php bin/console migrate
 
 ### Sin Docker
 
-Requisitos: PHP 8.4 o superior con `pdo_mysql` y `gd`, y MySQL 8.4.
+Requisitos: PHP 8.5 o superior con `pdo_mysql` y `gd`, y MySQL 8.4.
 
 ```bash
 git clone https://github.com/JuanCarlosBarronLopez/DataForge.git
@@ -176,7 +176,7 @@ docker run --rm -v "$(pwd)":/app -w /app dataforge-dev composer check
 
 | Servicio | Imagen | Puerto | Función |
 |---|---|---|---|
-| `app` | `php:8.4-apache` | `8080` | Aplicación con el front controller en `public/` |
+| `app` | `php:8.5-apache` | `8080` | Aplicación con el front controller en `public/` |
 | `db` | `mysql:8.4` | `3307` | MySQL 8.4 LTS con volumen persistente |
 | `phpmyadmin` | `phpmyadmin/phpmyadmin` | `8081` | Administración visual del servidor |
 | `redis` | `redis:8-alpine` | `6380` | Backend del rate limiting (opcional) |
