@@ -27,9 +27,8 @@ use DataForge\Support\Url;
                 instalar un cliente de escritorio.
             </p>
             <p>
-                La version actual es una reescritura completa del nucleo. La anterior era un conjunto de scripts
-                PHP con logica duplicada; esta es una aplicacion por capas con front controller, cadena de
-                middleware y repositorios sobre PDO.
+                Es una aplicacion por capas: un front controller, una cadena de middleware, servicios con las
+                reglas de negocio y repositorios sobre PDO.
             </p>
         </div>
     </section>
@@ -42,13 +41,10 @@ use DataForge\Support\Url;
             </p>
             <p>
                 Yo soy el creador y el desarrollador: la arquitectura, los flujos de autenticacion y de tiempo
-                real, la planeacion y el reparto de tareas del equipo original, y despues la reescritura
+                real, la planeacion y el reparto de tareas del equipo original, y el mantenimiento del proyecto.
             </p>
             <p class="muted">
-                <!-- TODO: numero de integrantes -->
-            </p>
-            <p class="muted">
-                El equipo de mantenimiento actual es una persona, con el papel de lider tecnico.
+                Equipo de mantenimiento: <strong>1 persona</strong>, con el papel de lider tecnico.
             </p>
         </div>
     </section>
@@ -89,7 +85,7 @@ use DataForge\Support\Url;
                 estan documentadas en la <a href="<?= Url::docs() ?>">documentacion</a>.
             </p>
             <p>
-                Repositorio: <a href="https://github.com/JuanCarlosBarronLopez/DataForge" rel="noopener">JuanCarlosBarronLopez/DataForge</a>
+                Repositorio: <a href="https://github.com/JuanCarlosBarronLopez/DataForge" rel="noopener">DataForge en GitHub</a>
             </p>
         </div>
     </section>

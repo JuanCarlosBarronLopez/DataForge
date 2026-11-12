@@ -88,7 +88,7 @@ $nonce = csp_nonce();
 <footer class="app-footer">
     <div class="app-footer__inner">
         <p>
-            OMNARA. Creado y desarrollado por Juan Carlos Barrón López.
+            OMNARA
         </p>
         <ul class="app-footer__links">
             <li><a href="<?= Url::docs() ?>">Documentacion</a></li>
