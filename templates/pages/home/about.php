@@ -12,47 +12,44 @@ use DataForge\Support\Url;
     <div>
         <h1 class="page-head__title">Sobre el proyecto</h1>
         <p class="page-head__lead">
-            DataForge es un ejercicio academico de la carrera de Ingenieria en TI e Innovacion Digital en la UTSJR.
+            DataForge nació como un proyecto académico de la UTSJR y hoy lo mantengo yo en solitario.
         </p>
     </div>
 </header>
 
 <div class="stack">
     <section class="panel">
-        <div class="panel__head"><h2 class="section-title">Contexto</h2></div>
+        <div class="panel__head"><h2 class="section-title">Origen</h2></div>
         <div class="panel__body stack">
             <p>
-                Se planteo como una plataforma multiusuario para trabajar con bases de datos MySQL desde el navegador:
-                crear esquemas, disenar tablas, operar con registros y revisar el resultado sin instalar un cliente de
-                escritorio.
+                Se planteo como una plataforma multiusuario para trabajar con bases de datos MySQL desde el
+                navegador: crear esquemas, disenar tablas, operar con registros y revisar el resultado sin
+                instalar un cliente de escritorio.
             </p>
-            <p class="muted">
-                La universidad pidio inventar una empresa como parte de la dinamica del curso. Esa empresa se llamo
-                <strong>Raju Technology</strong> y es ficticia: no existe y no tiene relacion con ninguna empresa real.
+            <p>
+                La version actual es una reescritura completa del nucleo. La anterior era un conjunto de scripts
+                PHP con logica duplicada; esta es una aplicacion por capas con front controller, cadena de
+                middleware y repositorios sobre PDO.
             </p>
         </div>
     </section>
 
     <section class="panel">
-        <div class="panel__head"><h2 class="section-title">Rol del equipo</h2></div>
+        <div class="panel__head"><h2 class="section-title">Autoria</h2></div>
         <div class="panel__body stack">
             <p>
-                En los proyectos de equipo, mi funcion fue <strong>arquitecto de software y lider del equipo</strong>:
-                disene la arquitectura, los flujos de seguridad (autenticacion, sesiones, tokens y limites de
-                peticion), la planeacion general y el reparto de tareas.
+                <strong>OMNARA</strong> es la organizacion que fundo y que mantiene este proyecto.
+            </p>
+            <p>
+                Yo soy el creador y el desarrollador: la arquitectura, los flujos de autenticacion y de tiempo
+                real, la planeacion y el reparto de tareas del equipo original, y despues la reescritura
             </p>
             <p class="muted">
-                Tambien se implementar, pero el aporte principal de este proyecto es el diseno y la division del
-                trabajo.
+                <!-- TODO: numero de integrantes -->
             </p>
-        </div>
-    </section>
-
-    <section class="panel">
-        <div class="panel__head"><h2 class="section-title">Equipo</h2></div>
-        <div class="panel__body">
-            <!-- TODO: anadir el numero y los nombres de integrantes cuando se confirmen. -->
-            <p class="muted">Numero de integrantes del equipo: TODO</p>
+            <p class="muted">
+                El equipo de mantenimiento actual es una persona, con el papel de lider tecnico.
+            </p>
         </div>
     </section>
 
@@ -74,10 +71,10 @@ use DataForge\Support\Url;
                     </p>
                 </article>
                 <article class="feature">
-                    <h3 class="feature__title">Pruebas y estaticos</h3>
+                    <h3 class="feature__title">Calidad automatica</h3>
                     <p class="feature__text">
-                        PHPUnit para las pruebas, PHPStan para el analisis estatico y PHP-CS-Fixer para la norma de
-                        estilo PSR-12.
+                        PHPUnit para las pruebas, PHPStan para el analisis estatico, PHP-CS-Fixer para la norma de
+                        estilo y una comprobacion propia del escape de la salida.
                     </p>
                 </article>
             </div>

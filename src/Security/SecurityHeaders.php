@@ -51,6 +51,10 @@ final class SecurityHeaders
             'X-Permitted-Cross-Domain-Policies' => 'none',
             'X-Download-Options'                => 'noopen',
             'Cross-Origin-Embedder-Policy'      => 'require-corp',
+            // El auditor XSS heredado de los navegadores antiguos introduce
+            // vulnerabilidades por si mismo. El valor 0 lo desactiva de forma
+            // explicita en lugar de omitir la cabecera.
+            'X-XSS-Protection' => '0',
         ];
 
         if ($this->production) {

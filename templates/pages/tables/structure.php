@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Edicion de la estructura de una tabla.
  *
@@ -12,6 +15,7 @@
  * @var \DataForge\Security\Csrf $csrf
  */
 
+use DataForge\Support\Column;
 use DataForge\Support\Url;
 
 $typeFromSql = static function (string $sqlType): string {
@@ -33,10 +37,6 @@ $typeFromSql = static function (string $sqlType): string {
         str_starts_with($upper, 'JSON')      => 'JSON',
         default                              => 'VARCHAR',
     };
-};
-
-$lengthFromSql = static function (string $sqlType): int {
-    return preg_match('/\((\d+)\)/', $sqlType, $matches) === 1 ? (int) $matches[1] : 255;
 };
 
 $crumbs = [
@@ -82,11 +82,11 @@ echo $view->partial('breadcrumb', ['crumbs' => $crumbs]);
                                 <tr>
                                     <td>
                                         <span class="mono"><?= e($fieldName) ?></span>
-                                        <input type="hidden" name="columns[<?= $index ?>][name]" value="<?= e($fieldName) ?>">
+                                        <input type="hidden" name="columns[<?= (int) $index ?>][name]" value="<?= e($fieldName) ?>">
                                     </td>
                                     <td>
                                         <?php $current = $typeFromSql((string) $column['Type']) ?>
-                                        <select class="select" name="columns[<?= $index ?>][type]"
+                                        <select class="select" name="columns[<?= (int) $index ?>][type]"
                                                 aria-label="Tipo de <?= e($fieldName) ?>">
                                             <?php foreach ($types as $type): ?>
                                                 <option value="<?= e($type->value) ?>" <?= $type->value === $current ? 'selected' : '' ?>>
@@ -97,13 +97,13 @@ echo $view->partial('breadcrumb', ['crumbs' => $crumbs]);
                                     </td>
                                     <td>
                                         <input class="input" type="number" min="1" max="16383"
-                                               value="<?= $lengthFromSql((string) $column['Type']) ?>"
-                                               name="columns[<?= $index ?>][length]"
+                                               value="<?= Column::length((string) $column['Type']) ?>"
+                                               name="columns[<?= (int) $index ?>][length]"
                                                aria-label="Longitud de <?= e($fieldName) ?>">
                                     </td>
                                     <td>
                                         <input class="checkbox" type="checkbox" value="1"
-                                               name="columns[<?= $index ?>][nullable]"
+                                               name="columns[<?= (int) $index ?>][nullable]"
                                                <?= ($column['Null'] ?? 'NO') === 'YES' ? 'checked' : '' ?>
                                                aria-label="<?= e($fieldName) ?> admite nulo">
                                     </td>

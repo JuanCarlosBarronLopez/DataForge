@@ -5,8 +5,6 @@
  * @var string $pageTitle
  */
 
-use DataForge\Support\Url;
-
 ?>
 <header class="page-head">
     <div>
@@ -22,9 +20,10 @@ use DataForge\Support\Url;
         <div class="panel__head"><h2 class="section-title">Arquitectura</h2></div>
         <div class="panel__body stack">
             <p>
-                DataForge es una aplicacion PHP nativa organizada en tres capas: HTTP, dominio y persistencia. No usa
-                un framework ni sigue MVC, ADR ni ninguna otra familia de patrones: es un controlador sobre rutas con
-                servicios y repositorios debajo.
+                DataForge es una aplicacion PHP nativa organizada en capas: un front controller, una cadena de
+                middleware, controladores, servicios con las reglas de negocio, repositorios sobre PDO y un motor
+                de plantillas propio. No usa un framework y no implementa MVC, ADR ni ningun otro patron de
+                plantilla: es una aplicacion por capas.
             </p>
 
             <ol class="stack stack--tight" style="padding-left:1.25rem">
@@ -34,7 +33,7 @@ use DataForge\Support\Url;
                 </li>
                 <li>
                     <strong>Dominio</strong>: servicios con las reglas de negocio (autenticacion, bases de datos,
-                    tablas, registros, consultas, exportacion).
+                    tablas, registros, consultas, exportacion, alimentacion en vivo).
                 </li>
                 <li>
                     <strong>Persistencia</strong>: repositorios sobre PDO con consultas parametrizadas, mas una
@@ -66,7 +65,7 @@ use DataForge\Support\Url;
     </section>
 
     <section class="panel">
-        <div class="panel__head"><h2 class="section-title">Modelo de seguridad</h2></div>
+        <div class="panel__head"><h2 class="section-title">Las siete capas de seguridad</h2></div>
         <div class="panel__body">
             <div class="table-wrap">
                 <table class="data-table">
@@ -79,12 +78,12 @@ use DataForge\Support\Url;
                     </thead>
                     <tbody>
                         <tr>
-                            <td>CSRF</td>
-                            <td>Token por accion, <code class="mono">hash_equals</code>, consumido tras cada intento</td>
+                            <td>CSRF por accion</td>
+                            <td>Token por ruta, <code class="mono">hash_equals</code>, consumido tras cada intento</td>
                             <td class="mono">src/Security/Csrf.php</td>
                         </tr>
                         <tr>
-                            <td>Consulta</td>
+                            <td>Consultas</td>
                             <td>PDO con <code class="mono">ATTR_EMULATE_PREPARES</code> en false</td>
                             <td class="mono">src/Database/ConnectionFactory.php</td>
                         </tr>
@@ -100,12 +99,12 @@ use DataForge\Support\Url;
                         </tr>
                         <tr>
                             <td>Cabeceras</td>
-                            <td>CSP con nonce por peticion; sin <code class="mono">X-XSS-Protection</code></td>
+                            <td>CSP con nonce por peticion, <code class="mono">X-XSS-Protection: 0</code></td>
                             <td class="mono">src/Security/SecurityHeaders.php</td>
                         </tr>
                         <tr>
                             <td>Rate limit</td>
-                            <td>Limite general y limite de acceso con Redis o archivos</td>
+                            <td>Limite general y de acceso, con Redis o archivos, y bloqueo por cuenta</td>
                             <td class="mono">src/Security/RateLimiter.php</td>
                         </tr>
                         <tr>
@@ -114,9 +113,9 @@ use DataForge\Support\Url;
                             <td class="mono">src/Security/SessionManager.php</td>
                         </tr>
                         <tr>
-                            <td>Subidas</td>
-                            <td>Deteccion MIME con <code class="mono">finfo</code> y recodificacion con GD</td>
-                            <td class="mono">src/Service/AvatarService.php</td>
+                            <td>Entrada y salida</td>
+                            <td>Validacion en el servicio y escape obligatorio, comprobado en CI</td>
+                            <td class="mono">src/Support/Validator.php</td>
                         </tr>
                     </tbody>
                 </table>
@@ -125,10 +124,24 @@ use DataForge\Support\Url;
     </section>
 
     <section class="panel">
+        <div class="panel__head"><h2 class="section-title">Tiempo real</h2></div>
+        <div class="panel__body stack">
+            <p>
+                El panel mantiene las metricas y la bitacora al dia con un canal de Server-Sent Events sobre
+                HTTP nativo, sin librerias de cliente ni servidor de eventos aparte.
+            </p>
+            <p class="muted">
+                La conexion se cierra a los cinco minutos y el navegador la reabre sola. La sesion se libera
+                antes de entrar al bucle para que las demas peticiones del mismo usuario no esperen.
+            </p>
+        </div>
+    </section>
+
+    <section class="panel">
         <div class="panel__head"><h2 class="section-title">Pruebas y calidad</h2></div>
         <div class="panel__body stack">
             <pre class="code-block">composer install
-composer check        # estilo + analisis estatico + pruebas</pre>
+composer check        # estilo + escape + analisis estatico + pruebas</pre>
             <div class="table-wrap">
                 <table class="data-table">
                     <thead>
@@ -143,6 +156,10 @@ composer check        # estilo + analisis estatico + pruebas</pre>
                             <td>Norma PSR-12 y declaracion de <code class="mono">strict_types</code></td>
                         </tr>
                         <tr>
+                            <td>check-escape</td>
+                            <td>Que ninguna plantilla imprima datos sin pasar por <code class="mono">e()</code></td>
+                        </tr>
+                        <tr>
                             <td>PHPStan nivel 8</td>
                             <td>Tipos, ramas no cubiertas y errores de referencia</td>
                         </tr>
@@ -152,7 +169,7 @@ composer check        # estilo + analisis estatico + pruebas</pre>
                         </tr>
                         <tr>
                             <td>GitHub Actions</td>
-                            <td>Ejecuta las tres herramientas en cada <code class="mono">push</code> y en cada PR</td>
+                            <td>Ejecuta las cuatro herramientas en cada <code class="mono">push</code> y en cada PR</td>
                         </tr>
                     </tbody>
                 </table>
@@ -187,25 +204,18 @@ composer check        # estilo + analisis estatico + pruebas</pre>
                     mano.
                 </li>
                 <li>
-                    <strong>La interaccion en tiempo real no existe.</strong> No hay websockets ni sondeo: la pagina
-                    refleja el estado al recargar.
+                    <strong>Las sesiones viven en archivos.</strong> Con mas de una instancia de la aplicacion no se
+                    comparten.
+                </li>
+                <li>
+                    <strong>Cada canal en vivo ocupa un proceso de PHP.</strong> Con muchas conexiones simultaneas
+                    habria que pasar a un servidor de eventos.
+                </li>
+                <li>
+                    <strong>No hay API REST.</strong> El enrutador y los servicios estan preparados, pero no existe
+                    superficie HTTP adicional.
                 </li>
             </ul>
-        </div>
-    </section>
-
-    <section class="panel">
-        <div class="panel__head"><h2 class="section-title">Limite de peticiones</h2></div>
-        <div class="panel__body stack">
-            <p>
-                La aplicacion aplica dos limites: uno general por direccion IP y otro mas estricto en las rutas de
-                acceso. Se superponen con el historial de intentos fallidos por cuenta, que bloquea una cuenta
-                concreta aunque los intentos lleguen desde varias direcciones.
-            </p>
-            <p class="muted">
-                Ambos valores son configurables por variable de entorno en <code class="mono">.env</code>. Consulta la
-                seccion de <a href="<?= Url::about() ?>">instalacion</a> del repositorio.
-            </p>
         </div>
     </section>
 </div>

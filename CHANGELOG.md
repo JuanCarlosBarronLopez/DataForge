@@ -11,6 +11,8 @@ Reescritura completa del nucleo. La version 3.2 sigue disponible en el historial
 
 - Front controller con enrutador de rutas con parametros, cadena de middleware y contenedor
   de dependencias por reflexion.
+- **Tiempo real**: canal de Server-Sent Events (`GET /events`) que mantiene al dia las metricas
+  y la bitacora del panel sin recargar la pagina.
 - Aislamiento entre cuentas: cada base de datos tiene un propietario y solo su propietario
   puede usarla.
 - Consola SQL de solo lectura con limite de filas, tiempo de ejecucion maximo e historial.
@@ -20,7 +22,10 @@ Reescritura completa del nucleo. La version 3.2 sigue disponible en el historial
 - Consola de administracion (`migrate`, `migrate:status`, `routes`, `version`).
 - Siete paletas de color con modo claro y oscuro, con contraste verificado contra WCAG AA.
 - Exportacion e importacion de avatares validados por contenido y recodificados con GD.
-- Suite de 130 pruebas unitarias y de integracion, PHPStan en nivel 8, PHP-CS-Fixer y
+- **Comprobacion automatica del escape de la salida** (`bin/check-escape.php`): revisa las
+  expresiones de las plantillas y falla la integracion continua si alguna imprime un dato sin
+  pasar por `e()`.
+- Suite de 135 pruebas unitarias y de integracion, PHPStan en nivel 8, PHP-CS-Fixer y
   integracion continua en GitHub Actions.
 - Documentacion: README, arquitectura, modelo de amenazas y guia de contribucion.
 
@@ -58,7 +63,9 @@ Reescritura completa del nucleo. La version 3.2 sigue disponible en el historial
   HTML.
 - **El selector de tema no hacia nada.** `change_theme.php` era inalcanzable y
   `update_profile.php` ignoraba el campo `theme`.
-- **`X-XSS-Protection` seguia activa.** La cabecera esta obsoleta.
+- **La cabecera `X-XSS-Protection` seguia activa.** La cabecera esta obsoleta; ahora se envia
+  con valor `0`, que es lo que recomienda OWASP: desactiva el auditor heredado de los
+  navegadores antiguos sin crear el problema.
 - **La cabecera `X-Forwarded-For` se aceptaba sin comprobar el proxy**, lo que permitia
   evadir el rate limit falseando la IP.
 - **La cuenta no se bloqueaba por intentos fallidos**, solo por IP.
@@ -73,6 +80,9 @@ Reescritura completa del nucleo. La version 3.2 sigue disponible en el historial
   son plantillas que comparten el layout.
 - La carpeta `uploads/` en la raiz: los archivos se guardan en `storage/uploads/`.
 - El video de demostracion de 19 MB.
+- El blueprint de Render (`render.yaml`) y la seccion de despliegue asociada.
+- Toda atribucion a la empresa ficticia de la dinamica del curso. La autoria es de OMNARA,
+  fundada por el autor del proyecto.
 
 ## [3.2.0]
 

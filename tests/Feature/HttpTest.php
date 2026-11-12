@@ -67,7 +67,7 @@ final class HttpTest extends DatabaseTestCase
         self::assertSame(200, $response->status());
         self::assertStringContainsString('Content-Security-Policy', implode(' ', array_keys($response->headers())));
         self::assertStringContainsString('X-Content-Type-Options', implode(' ', array_keys($response->headers())));
-        self::assertArrayNotHasKey('X-XSS-Protection', $response->headers());
+        self::assertSame('0', $response->headers()['X-XSS-Protection'] ?? null);
         self::assertStringContainsString('DataForge', $response->body());
     }
 
@@ -207,8 +207,8 @@ final class HttpTest extends DatabaseTestCase
         $response = self::$application->handle(Request::create('GET', '/about'));
 
         self::assertSame(200, $response->status());
-        self::assertStringContainsString('Raju Technology', $response->body());
-        self::assertStringContainsString('empresa ficticia', $response->body());
+        self::assertStringContainsString('OMNARA', $response->body());
+        self::assertStringNotContainsString('Raju Technology', $response->body());
     }
 
     public function testLaPaginaNoEscapaLosDatosDelUsuario(): void

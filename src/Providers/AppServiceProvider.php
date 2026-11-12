@@ -192,5 +192,12 @@ final class AppServiceProvider
                 (int) $config->get('security.query.timeout', 10),
             );
         });
+
+        $container->singleton(\DataForge\Service\LiveFeed::class, static function (Container $c): \DataForge\Service\LiveFeed {
+            return new \DataForge\Service\LiveFeed(
+                $c->get(ActivityRepository::class),
+                $c->get(\DataForge\Service\DatabaseService::class),
+            );
+        });
     }
 }

@@ -6,17 +6,27 @@ namespace DataForge\Core;
 
 /**
  * Representacion inmutable de una respuesta HTTP saliente.
+ *
+ * Una respuesta puede ser normal (con cuerpo) o en flujo: en ese caso el
+ * cuerpo lo produce un callback que se ejecuta al enviar la respuesta, lo
+ * que permite servidores de eventos (SSE) sin buffering.
  */
 final class Response
 {
+    /** @var callable|null */
+    private $streamer;
+
     /**
      * @param array<string, string> $headers
      */
-    public function __construct(
+    private function __construct(
         private readonly string $body,
         private readonly int $status = 200,
         private readonly array $headers = [],
-    ) {}
+        ?callable $streamer = null,
+    ) {
+        $this->streamer = $streamer;
+    }
 
     public static function html(string $body, int $status = 200): self
     {
@@ -59,6 +69,36 @@ final class Response
         ]);
     }
 
+    /**
+     * Respuesta con contenido binario que se muestra en el navegador.
+     *
+     * @param array<string, string> $headers
+     */
+    public static function binary(string $body, string $contentType, array $headers = []): self
+    {
+        return new self($body, 200, array_merge([
+            'Content-Type'           => $contentType,
+            'Content-Length'         => (string) strlen($body),
+            'X-Content-Type-Options' => 'nosniff',
+        ], $headers));
+    }
+
+    /**
+     * Respuesta en flujo. El callback recibe un emisor con el que escribir
+     * cada fragmento.
+     *
+     * @param callable(callable(string): void): void $streamer
+     */
+    public static function stream(callable $streamer): self
+    {
+        return new self('', 200, [
+            'Content-Type'      => 'text/event-stream; charset=UTF-8',
+            'Cache-Control'     => 'no-cache, no-store, no-transform',
+            'Connection'        => 'keep-alive',
+            'X-Accel-Buffering' => 'no',
+        ], $streamer);
+    }
+
     public function body(): string
     {
         return $this->body;
@@ -82,7 +122,7 @@ final class Response
         $headers        = $this->headers;
         $headers[$name] = $value;
 
-        return new self($this->body, $this->status, $headers);
+        return new self($this->body, $this->status, $headers, $this->streamer);
     }
 
     public function send(): void
@@ -92,6 +132,12 @@ final class Response
             foreach ($this->headers as $name => $value) {
                 header($name.': '.$value);
             }
+        }
+
+        if ($this->streamer !== null) {
+            ($this->streamer)();
+
+            return;
         }
 
         echo $this->body;

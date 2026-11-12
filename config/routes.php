@@ -6,6 +6,7 @@ use DataForge\Http\Controller\ActivityController;
 use DataForge\Http\Controller\AuthController;
 use DataForge\Http\Controller\DashboardController;
 use DataForge\Http\Controller\DatabaseController;
+use DataForge\Http\Controller\EventController;
 use DataForge\Http\Controller\HomeController;
 use DataForge\Http\Controller\MediaController;
 use DataForge\Http\Controller\ProfileController;
@@ -61,6 +62,8 @@ return [
     ['POST', '/query',      [QueryController::class, 'execute'], [VerifyCsrfMiddleware::class, RequireAuthMiddleware::class]],
 
     ['GET',  '/activity',   [ActivityController::class, 'index'], [RequireAuthMiddleware::class]],
+
+    ['GET',  '/events',     [EventController::class, 'stream'],  [RequireAuthMiddleware::class]],
 
     ['GET',  '/profile',          [ProfileController::class, 'show'],          [RequireAuthMiddleware::class]],
     ['POST', '/profile',          [ProfileController::class, 'update'],        [VerifyCsrfMiddleware::class, RequireAuthMiddleware::class]],

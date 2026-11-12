@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Formulario de alta y edicion de registro.
  *
@@ -13,26 +16,8 @@
  * @var \DataForge\Security\Csrf $csrf
  */
 
+use DataForge\Support\Column;
 use DataForge\Support\Url;
-
-$inputType = static function (string $sqlType): string {
-    $upper = strtoupper($sqlType);
-
-    return match (true) {
-        str_contains($upper, 'INT'),
-        str_contains($upper, 'DECIMAL'),
-        str_contains($upper, 'DOUBLE'),
-        str_contains($upper, 'FLOAT') => 'number',
-        str_contains($upper, 'DATE')  => 'date',
-        str_contains($upper, 'DATETIME'),
-        str_contains($upper, 'TIMESTAMP') => 'datetime-local',
-        default                           => 'text',
-    };
-};
-
-$isBoolean = static fn(string $sqlType): bool => str_starts_with(strtoupper($sqlType), 'TINYINT(1)') || str_starts_with(strtoupper($sqlType), 'BOOLEAN');
-
-$isLong = static fn(string $sqlType): bool => str_starts_with(strtoupper($sqlType), 'TEXT');
 
 $crumbs = [
     ['label' => 'Bases de datos', 'href' => Url::databases()],
@@ -78,14 +63,14 @@ echo $view->partial('breadcrumb', ['crumbs' => $crumbs]);
                         <?php endif ?>
                     </label>
 
-                    <?php if ($isBoolean($type)): ?>
+                    <?php if (Column::isBoolean($type)): ?>
                         <input class="checkbox" type="checkbox" id="<?= e($id) ?>" name="<?= e($name) ?>" value="1"
                             <?= ((string) $value === '1' || $value === true) ? 'checked' : '' ?>>
-                    <?php elseif ($isLong($type)): ?>
+                    <?php elseif (str_starts_with(strtoupper($type), 'TEXT')): ?>
                         <textarea class="textarea" id="<?= e($id) ?>" name="<?= e($name) ?>"
                                   rows="4"><?= e((string) $value) ?></textarea>
                     <?php else: ?>
-                        <input class="input" type="<?= $inputType($type) ?>" id="<?= e($id) ?>" name="<?= e($name) ?>"
+                        <input class="input" type="<?= e(Column::inputType($type)) ?>" id="<?= e($id) ?>" name="<?= e($name) ?>"
                                value="<?= e((string) $value) ?>"
                                <?= ($column['Null'] ?? 'NO') === 'NO' ? 'required' : '' ?>>
                     <?php endif ?>
