@@ -8,7 +8,7 @@
 #   docker build -t dataforge .
 #   docker run --rm -p 8080:80 -e DB_HOST=... dataforge
 
-FROM php:8.4-apache
+FROM php:8.5-apache
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
