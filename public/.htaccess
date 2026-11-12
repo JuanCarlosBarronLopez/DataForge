@@ -1,0 +1,31 @@
+# ============================================
+# DataForge - Configuracion de Apache para el
+# front controller.
+# ============================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Todo el trafico entra por el front controller.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# No se listan los directorios.
+Options -Indexes
+
+<FilesMatch "^\.|\.(env|ini|log|sql|md|dist|bak|sh|lock)$">
+    Require all denied
+</FilesMatch>
+
+# La cabecera CSP se envia desde PHP con un nonce por peticion.
+<IfModule mod_headers.c>
+    Header always unset X-XSS-Protection
+</IfModule>
+
+# Limite de peticiones PHP.
+<IfModule mod_php.c>
+    php_value upload_max_filesize 4M
+    php_value post_max_size 5M
+</IfModule>

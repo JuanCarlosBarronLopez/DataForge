@@ -1,26 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd"
-         bootstrap="tests/bootstrap.php"
-         colors="true"
-         cacheDirectory=".phpunit.cache"
-         executionOrder="depends,defects"
-         failOnWarning="true"
-         failOnRisky="true"
-         beStrictAboutOutputDuringTests="false">
-    <testsuites>
-        <testsuite name="DataForge Test Suite">
-            <directory>tests</directory>
-        </testsuite>
-    </testsuites>
-    <php>
-        <env name="APP_ENV" value="testing"/>
-        <env name="APP_DEBUG" value="true"/>
-        <env name="DB_HOST" value="127.0.0.1"/>
-        <env name="DB_PORT" value="3307"/>
-        <env name="DB_USER" value="dataforge"/>
-        <env name="DB_PASS" value="dataforge_secret"/>
-        <env name="SYSTEM_DB" value="dataforge_test"/>
-        <env name="RATE_LIMIT_STORAGE" value="file"/>
-    </php>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd" bootstrap="tests/bootstrap.php" colors="true" cacheDirectory="build/.phpunit.cache" executionOrder="defects" failOnWarning="true" failOnNotice="true" failOnRisky="true" beStrictAboutOutputDuringTests="true" displayDetailsOnTestsThatTriggerWarnings="true" displayDetailsOnTestsThatTriggerErrors="true" displayDetailsOnPhpunitDeprecations="true" resolveDependencies="true">
+  <testsuites>
+    <testsuite name="Unit">
+      <directory>tests/Unit</directory>
+    </testsuite>
+    <testsuite name="Feature">
+      <directory>tests/Feature</directory>
+    </testsuite>
+  </testsuites>
+  <source>
+    <include>
+      <directory>src</directory>
+    </include>
+  </source>
+  <php>
+    <env name="APP_ENV" value="testing"/>
+    <env name="APP_DEBUG" value="true"/>
+    <env name="APP_URL" value="http://localhost:8080"/>
+    <env name="DB_HOST" value="127.0.0.1"/>
+    <env name="DB_PORT" value="3307"/>
+    <env name="DB_USER" value="dataforge"/>
+    <env name="DB_PASS" value="dataforge_secret"/>
+    <env name="SYSTEM_DB" value="dataforge_test"/>
+    <env name="DB_CHARSET" value="utf8mb4"/>
+    <env name="RATE_LIMIT_STORAGE" value="file"/>
+    <env name="SESSION_IDLE_TIMEOUT" value="1800"/>
+    <env name="SESSION_ABSOLUTE_TIMEOUT" value="28800"/>
+  </php>
 </phpunit>

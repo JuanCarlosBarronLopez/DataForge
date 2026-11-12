@@ -1,0 +1,120 @@
+/* ============================================
+   DataForge - Temas
+   ============================================
+   Cada tema define un unico color de marca. Los modos claro y oscuro
+   comparten la misma estructura de superficies y solo cambian el acento a su
+   variante legible: en modo oscuro el acento es mas luminoso y en modo claro
+   mas oscuro, para mantener el contraste AA en ambos.
+
+   Contraste verificado con la formula WCAG 2.x (R-25):
+   - acento de modo oscuro sobre --surface-0 (#0e1013) y --surface-1 (#15181d)
+   - acento de modo claro sobre --surface-0 (#f3f5f7) y --surface-1 (#ffffff)
+   ============================================ */
+
+/* --- Grafito: cobre. Identidad por defecto del producto. --- */
+
+[data-theme='neutral'] {
+    --accent-dark: #c87941;
+    --accent-dark-strong: #db8c50;
+    --accent-ink-dark: #140f0b;
+    --accent-soft-dark: rgba(200, 121, 65, 0.15);
+
+    --accent-light: #a85a28;
+    --accent-light-strong: #8d4a1e;
+    --accent-ink-light: #ffffff;
+    --accent-soft-light: rgba(168, 90, 40, 0.12);
+}
+
+/* --- MediCare: verde salvia clinico. --- */
+
+[data-theme='medico'] {
+    --accent-dark: #3e9b7e;
+    --accent-dark-strong: #4fb08f;
+    --accent-ink-dark: #06140f;
+    --accent-soft-dark: rgba(62, 155, 126, 0.15);
+
+    --accent-light: #1f6b55;
+    --accent-light-strong: #175542;
+    --accent-ink-light: #ffffff;
+    --accent-soft-light: rgba(31, 107, 85, 0.12);
+}
+
+/* --- FoodPro: paprika. --- */
+
+[data-theme='alimentos'] {
+    --accent-dark: #e07a4f;
+    --accent-dark-strong: #ec8e62;
+    --accent-ink-dark: #1a0b05;
+    --accent-soft-dark: rgba(224, 122, 79, 0.15);
+
+    --accent-light: #b4502a;
+    --accent-light-strong: #96401f;
+    --accent-ink-light: #ffffff;
+    --accent-soft-light: rgba(180, 80, 42, 0.12);
+}
+
+/* --- IronForge: amarillo de seguridad industrial. --- */
+
+[data-theme='ferreteria'] {
+    --accent-dark: #d6a62a;
+    --accent-dark-strong: #e4b63e;
+    --accent-ink-dark: #171003;
+    --accent-soft-dark: rgba(214, 166, 42, 0.17);
+
+    --accent-light: #7d6008;
+    --accent-light-strong: #634b05;
+    --accent-ink-light: #ffffff;
+    --accent-soft-light: rgba(125, 96, 8, 0.14);
+}
+
+/* --- LexDesk: burdeos sobrio. --- */
+
+[data-theme='legal'] {
+    --accent-dark: #c0687a;
+    --accent-dark-strong: #d07c8c;
+    --accent-ink-dark: #1a070c;
+    --accent-soft-dark: rgba(192, 104, 122, 0.15);
+
+    --accent-light: #8a3b4c;
+    --accent-light-strong: #6e2c3b;
+    --accent-ink-light: #ffffff;
+    --accent-soft-light: rgba(138, 59, 76, 0.12);
+}
+
+/* --- EduBase: azul tinta institucional. --- */
+
+[data-theme='educacion'] {
+    --accent-dark: #6f9fe0;
+    --accent-dark-strong: #83b0e8;
+    --accent-ink-dark: #06101f;
+    --accent-soft-dark: rgba(111, 159, 224, 0.15);
+
+    --accent-light: #2e5ea8;
+    --accent-light-strong: #234b88;
+    --accent-ink-light: #ffffff;
+    --accent-soft-light: rgba(46, 94, 168, 0.12);
+}
+
+/* --- ShopFlow: rosa comercial. --- */
+
+[data-theme='retail'] {
+    --accent-dark: #d0648a;
+    --accent-dark-strong: #dc7899;
+    --accent-ink-dark: #1d0710;
+    --accent-soft-dark: rgba(208, 100, 138, 0.15);
+
+    --accent-light: #9e2f57;
+    --accent-light-strong: #812549;
+    --accent-ink-light: #ffffff;
+    --accent-soft-light: rgba(158, 47, 87, 0.12);
+}
+
+/* --- Vista previa de cada paleta en el selector de temas --- */
+
+.swatch__chip--base {
+    background: var(--surface-2);
+}
+
+.swatch__chip--accent {
+    background: var(--swatch-accent);
+}

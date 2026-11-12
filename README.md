@@ -1,369 +1,270 @@
-# 🔷 DataForge CRUD Manager v3.2
+# DataForge
 
-[![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=flat-square&logo=php&logoColor=white)](https://php.net)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://mysql.com)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://docker.com)
-[![PHPUnit](https://img.shields.io/badge/Tests-PHPUnit-3C9CD7?style=flat-square&logo=php&logoColor=white)](https://phpunit.de)
-[![License: MIT](https://img.shields.io/badge/License-MIT-06b6d4?style=flat-square)](LICENSE)
-[![Deploy](https://img.shields.io/badge/Deploy-Render-46E3B7?style=flat-square&logo=render&logoColor=white)](https://render.com)
-[![Security](https://img.shields.io/badge/Security-Hardened-10b981?style=flat-square&logo=shield&logoColor=white)]()
+**DataForge is a multi-user web console for MySQL databases written in plain PHP.**
+**Each account only sees the databases it created, and every schema change is recorded in an audit log.**
+**It ships with Docker Compose, PHPUnit, PHPStan and a CI pipeline that runs on every push.**
 
-**DataForge** es un **ecosistema multi-usuario** profesional para la gestión completa de bases de datos MySQL. Construido en PHP nativo (sin frameworks), demuestra dominio de fundamentos: arquitectura modular, seguridad multicapa, dockerización completa, y testing automatizado.
-
-> 🌐 **Demo en vivo:** [dataforge.onrender.com](https://dataforge.onrender.com) *(Configura tu URL aquí)*
+Proyecto academico en equipo de la UTSJR. Gestor web multiusuario de bases de datos MySQL
+construido con PHP nativo, sin frameworks.
 
 ---
 
-## 🖼️ Interfaz & Temas
+## Contexto y rol
 
-DataForge incluye 7 temas visuales adaptados a diferentes industrias, todos con soporte para modo claro y oscuro. 
+Este repositorio es el resultado de un proyecto academico de la carrera de **Ingenieria en TI
+e Innovacion Digital** de la **UTSJR**. La universidad pidio inventar una empresa como parte de
+la dinamica del curso: **"Raju Technology"** es ficticia, no existe y no tiene relacion con
+ninguna empresa real.
 
-![DataForge Demo Recording](img/demo.webp)
+En el equipo mi funcion fue la de **arquitecto de software y lider del equipo**:
 
-| Tema | Industria | Preview |
-|------|-----------|---------|
-| 💻 **Tech Dark** | Tecnología & Desarrollo | Tema por defecto — Tonos cyan/violeta sobre fondo oscuro |
-| 🏥 **MediCare** | Salud & Medicina | Paleta de verdes suaves y blancos clínicos |
-| 🍽️ **FoodPro** | Restaurantes & Alimentos | Naranjas cálidos y tonos terrosos |
-| 🔧 **IronForge** | Ferretería & Construcción | Amarillos industriales y grises metálicos |
-| ⚖️ **LexDesk** | Servicios Legales | Azules formales y dorados sobrios |
-| 🎓 **EduBase** | Educación & Escuelas | Verdes académicos y azules institucionales |
-| 🛍️ **ShopFlow** | Retail & Comercio | Rosas vibrantes y violetas comerciales |
+- Disene la arquitectura de la aplicacion y el reparto de responsabilidades entre capas.
+- Disene los flujos de seguridad: autenticacion, gestion de sesiones, tokens CSRF, limites de
+  peticiones y el modelo de aislamiento entre cuentas.
+- Planifique las iteraciones y el trabajo de cada integrante.
 
----
+Tambien implemente, pero el aporte principal de este proyecto es el diseno y la division del
+trabajo. **Numero de integrantes del equipo: TODO** (pendiente de confirmar).
 
-## ✨ Características Técnicas
-
-| Módulo | Especificación |
-|--------|---------------|
-| 🔐 **Autenticación** | Registro/login blindado por `PASSWORD_BCRYPT` (cost 12). Tokens CSRF por vista. Session cookies con `SameSite=Strict`, `HttpOnly`, `Secure`. |
-| 🏰 **Auto-Migración** | Base `dataforge_system` se crea automáticamente al primer registro. Upgrade scripts reactivos detectan y añaden columnas faltantes. |
-| 🎨 **7 Temas** | Glassmorphism + CSS Variables. Inyección dinámica de tema al DOM. Soporte Light/Dark mode. |
-| 🗄️ **Gestión DB** | Crear, listar, eliminar bases de datos MySQL. Protección contra eliminación de DBs del sistema. |
-| 📊 **Diseñador de Tablas** | Constructor visual con soporte para INT, VARCHAR, DECIMAL, TEXT, DATE, DATETIME, BOOLEAN. |
-| 📝 **CRUD Completo** | Formularios dinámicos auto-generados. Prepared statements al 100%. Paginación. |
-| 📸 **Avatares** | Upload con preview async (FileReader). Renombramiento seguro via MD5. Validación de extensión. |
-| 🧪 **Data Seeder** | Módulo de inyección de datos de prueba para poblar dashboards. |
-| 🐳 **Docker** | Dockerfile + Compose con PHP, MySQL, phpMyAdmin, Redis. Soporte para Render/Railway. |
-| 🧪 **Tests** | PHPUnit con suites para Auth, CRUD, y Seguridad. |
+La version 4.0 es una reescritura completa del nucleo que la v3.2 dejo como conjunto de
+scripts PHP sueltos. La documentacion de la version anterior esta en el historial de Git.
 
 ---
 
-## 🏛️ Arquitectura
+## Funcionalidades verificadas
 
-```mermaid
-graph TD
-    subgraph Docker["🐳 Docker Compose"]
-        APP["PHP 8.2 + Apache"]
-        DB["MySQL 8.0"]
-        PMA["phpMyAdmin"]
-        REDIS["Redis 7"]
-    end
+Cada punto de esta lista se corresponde con codigo concreto del repositorio.
 
-    subgraph App["📦 Aplicación"]
-        CFG["config.php"]
-        SEC["security.php<br/>CSP + Rate Limit"]
-        
-        subgraph Classes["src/ — Clases OOP"]
-            CC["Config.php"]
-            CA["Auth.php"]
-            CD["Database.php"]
-            CR["CRUD.php"]
-        end
-        
-        subgraph Auth["auth/ — Autenticación"]
-            LOGIN["login.php"]
-            REG["register.php"]
-            AF["auth_functions.php"]
-        end
-        
-        subgraph Core["CRUD — Operaciones"]
-            DBS["database/"]
-            TBL["tables/"]
-            REC["records/"]
-        end
-        
-        DASH["dashboard.php"]
-        PROF["account/profile.php"]
-    end
+| Funcionalidad | Donde esta implementada |
+|---|---|
+| Cuentas de usuario con registro, acceso y cambio de contrasena | `src/Service/AuthService.php` |
+| Aislamiento entre cuentas: cada base de datos tiene un propietario | `src/Repository/ManagedDatabaseRepository.php` |
+| Alta y baja de bases de datos MySQL | `src/Service/DatabaseService.php` |
+| Constructor de tablas con 11 tipos de dato | `src/Service/TableService.php`, `src/Database/ColumnType.php` |
+| Edicion de la estructura: anadir, cambiar tipo y eliminar columnas | `src/Service/TableService.php` |
+| CRUD de registros con formularios generados desde el esquema real | `src/Service/RecordService.php` |
+| Listado con paginacion, orden por columna y busqueda en todas las columnas | `src/Service/RecordService.php` |
+| Consola SQL de solo lectura con limite de filas y tiempo de ejecucion | `src/Service/QueryService.php`, `src/Service/SqlGuard.php` |
+| Exportacion de una tabla en CSV y de una base de datos en `.sql` | `src/Service/ExportService.php` |
+| Bitacora de auditoria por usuario | `src/Repository/ActivityRepository.php` |
+| Siete paletas de color y modo claro/oscuro | `src/Support/Theme.php`, `public/assets/css/themes.css` |
+| Migraciones de esquema versionadas | `database/migrations/`, `src/Database/Migrator.php` |
+| Consola de administracion (`migrate`, `routes`, `version`) | `bin/console` |
 
-    APP --> DB
-    APP --> REDIS
-    PMA --> DB
+---
 
-    CFG --> SEC
-    CFG --> Classes
-    LOGIN --> AF
-    REG --> AF
-    DASH --> DBS
-    DBS --> TBL
-    TBL --> REC
+## Arquitectura
 
-    style Docker fill:#1e293b,color:#e2e8f0,stroke:#3b82f6
-    style Classes fill:#1e1b4b,color:#c4b5fd,stroke:#8b5cf6
-    style Auth fill:#1a2e05,color:#bef264,stroke:#65a30d
-    style Core fill:#1c1917,color:#fbbf24,stroke:#d97706
+La aplicacion no usa un framework y **no implementa MVC, ADR ni ningun otro patron de
+plantilla**. Es un controlador sobre rutas con tres capas debajo:
+
+```
+Peticion HTTP
+  -> public/index.php (front controller)
+  -> Application::handle()
+       -> Middleware: cabeceras de seguridad, manejo de errores, sesion, rate limit
+       -> Router::dispatch()
+            -> Middleware de la ruta: autenticacion, token CSRF
+            -> Controlador  (src/Http/Controller)
+                 -> Servicio (src/Service)      reglas de negocio
+                      -> Repositorio (src/Repository)  acceso a datos
+                           -> PDO
+            -> View::render()  (src/Core/View.php + templates/)
 ```
 
-### Flujo de Seguridad
+| Capa | Directorio | Responsabilidad |
+|---|---|---|
+| Nucleo | `src/Core/` | Peticion, respuesta, enrutador, cadena de middleware, contenedor de dependencias, plantillas |
+| HTTP | `src/Http/` | Controladores y middleware |
+| Dominio | `src/Service/` | Reglas de negocio: cuentas, bases de datos, tablas, registros, consultas, exportacion |
+| Persistencia | `src/Repository/`, `src/Database/` | Consultas parametrizadas, fabrica de conexiones y migraciones |
+| Seguridad | `src/Security/` | CSRF, sesiones, contrasenas, rate limiting, cabeceras, IP de cliente |
+| Soporte | `src/Support/` | Validacion, identificadores, tema, bitacora, rutas |
 
-```mermaid
-sequenceDiagram
-    participant U as Usuario
-    participant S as Security.php
-    participant A as Auth
-    participant D as Database
-
-    U->>S: HTTP Request
-    S->>S: Rate Limit Check
-    alt Límite excedido
-        S-->>U: 429 Too Many Requests
-    end
-    S->>S: CSP Headers + Helmet
-    U->>A: POST /auth/login.php
-    A->>A: Validate CSRF Token
-    A->>A: Sanitize Input
-    A->>D: Prepared Statement (SELECT)
-    D-->>A: User Data
-    A->>A: password_verify(bcrypt)
-    A-->>U: Session + Redirect
-```
+El detalle completo, con la rationale de cada decision, esta en
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 
-## 🚀 Instalación Rápida (Docker)
+## Seguridad
 
-### Requisitos
-- [Docker Desktop](https://docker.com/get-started) instalado y corriendo.
+Cada afirmacion apunta a un archivo. No hay medidas "deSerie" sin implementacion.
 
-### 3 comandos para empezar:
+| Capa | Implementacion |
+|---|---|
+| **CSRF** | Token por accion, generado con `random_bytes(32)`, verificado con `hash_equals()` y consumido tras cada intento, incluidos los fallidos. `src/Security/Csrf.php` |
+| **Consultas** | PDO con `ATTR_EMULATE_PREPARES => false`. Los valores viajan como parametros. `src/Database/ConnectionFactory.php` |
+| **Identificadores** | PDO no admite parametros para nombres de objeto, asi que todo nombre de base, tabla o columna pasa por una lista blanca (`[A-Za-z0-9_]{1,64}`) antes de interpolarse. `src/Support/Identifier.php` |
+| **Contrasenas** | Argon2id cuando la extension esta disponible y bcrypt con cost 12 como respaldo. Un hash con parametros antiguos se recalcula en el siguiente acceso. `src/Security/PasswordHasher.php` |
+| **Cabeceras** | CSP con nonce por peticion (`script-src` sin `unsafe-inline`), `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, HSTS en produccion. **No se envia `X-XSS-Protection`**: la cabecera esta obsoleta. `src/Security/SecurityHeaders.php` |
+| **Rate limiting** | Limite general por IP y limite mas estricto en acceso, con backend Redis o archivos. `src/Security/RateLimiter.php` |
+| **Bloqueo de cuenta** | Historial de intentos fallidos por cuenta: bloquea aunque los intentos lleguen desde varias IP. `src/Repository/LoginAttemptRepository.php` |
+| **Sesiones** | Cookie `HttpOnly`, `Secure`, `SameSite=Strict`, `use_strict_mode`, regeneracion del identificador al entrar, tiempo muerto de 30 minutos y duracion maxima de 8 horas. `src/Security/SessionManager.php` |
+| **IP de cliente** | `X-Forwarded-For` solo se respeta si el remitente esta en la lista de proxies de confianza. `src/Security/ClientIp.php` |
+| **Subidas** | Deteccion de tipo por contenido (`finfo`), limite de tamano, lectura de dimensiones y recodificacion con GD. Los archivos se guardan fuera del directorio publico y se sirven por una ruta que comprueba la propiedad. `src/Service/AvatarService.php` |
+| **Salida** | Escape en la capa de plantillas con el helper `e()`. No se imprimen excepciones de MySQL al navegador: se registran en el log y se muestra un mensaje generico. `src/Support/Logger.php` |
+
+El modelo de amenazas y las medidas pendientes estan en [SECURITY.md](SECURITY.md).
+
+---
+
+## Instalacion
+
+### Con Docker (recomendado)
+
+Requisitos: Docker Desktop.
 
 ```bash
-# 1. Clonar el repositorio
 git clone https://github.com/JuanCarlosBarronLopez/DataForge.git
 cd DataForge
-
-# 2. Configurar variables de entorno
 cp .env.example .env
-
-# 3. Levantar todo
 docker compose up -d --build
 ```
 
-**¡Listo!** Abre tu navegador:
-- 🌐 **DataForge:** [http://localhost:8080](http://localhost:8080)
-- 🗄️ **phpMyAdmin:** [http://localhost:8081](http://localhost:8081)
+| Servicio | URL |
+|---|---|
+| Aplicacion | http://localhost:8080 |
+| phpMyAdmin | http://localhost:8081 |
+| MySQL (puerto del host) | `localhost:3307` |
 
-### Servicios incluidos
-
-| Servicio | Puerto | Descripción |
-|----------|--------|-------------|
-| DataForge App | `8080` | Aplicación PHP + Apache |
-| MySQL 8.0 | `3307` | Base de datos (puerto externo) |
-| phpMyAdmin | `8081` | Administrador visual de MySQL |
-| Redis 7 | `6380` | Rate limiting & caché |
-
----
-
-## 🖥️ Instalación Legacy (XAMPP)
-
-Si prefieres el entorno tradicional sin Docker:
-
-1. **Requisitos:** Apache 2.4+, PHP 8.0+, MySQL 5.7+
-2. **Clonar al htdocs:**
-```bash
-git clone https://github.com/JuanCarlosBarronLopez/DataForge.git
-cp -r DataForge C:/xampp/htdocs/dataforge
-cd C:/xampp/htdocs/dataforge
-cp .env.example .env
-```
-3. **Editar `.env`** con tus credenciales de MySQL
-4. **Abrir** `http://localhost/dataforge/` y crear una cuenta
-
----
-
-## ☁️ Deploy en Render (Producción)
-
-### Paso 1 — Base de datos MySQL externa (TiDB Cloud)
-
-DataForge necesita una base de datos MySQL. Render no ofrece MySQL en su free tier, así que usamos **TiDB Cloud** (gratuito):
-
-1. Crea cuenta en [tidbcloud.com](https://tidbcloud.com)
-2. Crea un cluster **Serverless** (gratuito)
-3. Obtén las credenciales de conexión:
-   - Host: `gateway01.xx.tidbcloud.com`
-   - Puerto: `4000`
-   - Usuario: `xxxxx.root`
-   - Password: `tu_password`
-   - Database: `dataforge_system`
-
-### Paso 2 — Deploy en Render
-
-1. Crea cuenta en [render.com](https://render.com)
-2. **New → Blueprint** → Conecta tu repositorio GitHub
-3. Render detectará el `render.yaml` automáticamente
-4. En el dashboard de Render, configura las variables de entorno:
-
-```
-DB_HOST=gateway01.xx.tidbcloud.com
-DB_PORT=4000
-DB_USER=xxxxx.root
-DB_PASS=tu_password_tidb
-SYSTEM_DB=dataforge_system
-```
-
-5. Deploy automático al hacer push a `main`
-
-### Paso 3 — Verificar
-
-- Tu app estará en `https://dataforge.onrender.com`
-- El primer acceso puede tardar ~30s (cold start del free tier)
-
-> ⚠️ **Nota:** Los archivos subidos (avatares) se pierden en cada redeploy del free tier. Para producción real, usar almacenamiento externo (S3, Cloudinary).
-
----
-
-## 🔒 Seguridad
-
-DataForge implementa **7 capas de seguridad** transversal:
-
-### 1. Tokens CSRF
-Cada formulario inyecta un token criptográfico (`random_bytes(32)`) que se valida con `hash_equals()` y se invalida después de cada uso.
-
-### 2. Prepared Statements (100%)
-Todas las operaciones de datos usan `$stmt->bind_param()`. Los nombres de tablas/databases se validan con regex (`/^[a-zA-Z0-9_]+$/`) + `real_escape_string()`.
-
-### 3. Password Hashing
-`PASSWORD_BCRYPT` con cost 12. Verificación con `password_verify()`. Nunca se almacena contraseña en texto plano ni en sesión.
-
-### 4. Security Headers
-```
-X-Content-Type-Options: nosniff
-X-Frame-Options: SAMEORIGIN
-X-XSS-Protection: 1; mode=block
-Referrer-Policy: strict-origin-when-cross-origin
-Permissions-Policy: camera=(), microphone=(), geolocation=()
-Strict-Transport-Security: max-age=31536000 (producción)
-Content-Security-Policy: default-src 'self'; ...
-X-Permitted-Cross-Domain-Policies: none
-Cross-Origin-Opener-Policy: same-origin
-```
-
-### 5. Rate Limiting
-- **Global:** 60 requests/minuto por IP
-- **Login:** 5 intentos/5 minutos por IP
-- Backend: File-based (default) o Redis (producción)
-- Headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`
-- Respuesta: `429 Too Many Requests` con `Retry-After`
-
-### 6. Session Hardening
-```php
-session_set_cookie_params([
-    'secure'   => true,   // Solo HTTPS
-    'httponly'  => true,   // Sin acceso JS
-    'samesite'  => 'Strict' // Anti-CSRF cookies
-]);
-```
-
-### 7. Input Sanitization
-Funciones centralizadas `sanitizeInput()`, `sanitizeArray()`, `sanitizeDbIdentifier()` con `htmlspecialchars()`, `strip_tags()`, y validación regex.
-
----
-
-## 🧪 Tests
+El contenedor de la aplicacion aplica las migraciones al arrancar. Para hacerlo a mano:
 
 ```bash
-# Instalar dependencias de testing
+docker compose exec app php bin/console migrate
+```
+
+> El usuario de MySQL necesita permiso global `CREATE` y `DROP` para poder crear y eliminar
+> bases de datos. `docker/mysql-init/01-privileges.sql` lo concede al levantar el volumen por
+> primera vez. Si ya tienes el volumen creado, borralo con `docker compose down -v`.
+
+### Sin Docker
+
+Requisitos: PHP 8.4 o superior con `pdo_mysql` y `gd`, y MySQL 8.4.
+
+```bash
 composer install
-
-# Ejecutar todos los tests
-composer test
-
-# Ejecutar con Docker (recomendado)
-docker compose up -d
-docker compose exec app vendor/bin/phpunit
+cp .env.example .env      # ajusta DB_HOST, DB_USER, DB_PASS y SYSTEM_DB
+php bin/console migrate
+php -S localhost:8080 -t public
 ```
-
-### Suites de tests
-
-| Suite | Archivo | Tests |
-|-------|---------|-------|
-| **Auth** | `tests/AuthTest.php` | Registro, login, CSRF, sesiones, hashing, temas |
-| **CRUD** | `tests/CRUDTest.php` | Bases de datos, tablas, registros (Create/Read/Update/Delete) |
-| **Security** | `tests/SecurityTest.php` | Sanitización, rate limiting, validación de identificadores |
 
 ---
 
-## 📁 Estructura del Proyecto
+## Pruebas y calidad
+
+```bash
+composer install
+composer check        # estilo + analisis estatico + pruebas
+```
+
+| Herramienta | Que comprueba | Comando |
+|---|---|---|
+| PHPUnit 13 | 130 pruebas unitarias y de integracion | `composer test` |
+| PHPStan nivel 8 | Tipos, referencias y ramas no cubiertas | `composer analyse` |
+| PHP-CS-Fixer | Norma PSR-12 y `strict_types` | `composer lint` |
+| GitHub Actions | Las tres anteriores en cada push y en cada PR | `.github/workflows/ci.yml` |
+
+Las pruebas de integracion necesitan un MySQL accesible. Se puede apuntar a uno con variables
+de entorno:
+
+```bash
+DB_HOST=127.0.0.1 DB_PORT=3306 \
+DB_USER=root DB_PASS=root_secret \
+DB_ADMIN_USER=root DB_ADMIN_PASS=root_secret \
+SYSTEM_DB=dataforge_test \
+vendor/bin/phpunit
+```
+
+`DB_ADMIN_USER` y `DB_ADMIN_PASS` son los permisos con los que las pruebas crean y borran sus
+propias bases de datos. Sin MySQL, la suite se omite en lugar de fallar.
+
+Para levantar el entorno de herramientas sin PHP en el equipo:
+
+```bash
+docker build -t dataforge-dev -f docker/dev.Dockerfile docker
+docker run --rm -v "$(pwd)":/app -w /app dataforge-dev composer check
+```
+
+---
+
+## Despliegue
+
+`render.yaml` describe el servicio para Render. La base de datos se conecta por
+`DB_HOST`/`DB_PORT`/`DB_USER`/`DB_PASS`/`SYSTEM_DB` o por una unica `MYSQL_URL` en formato
+`mysql://usuario:clave@host:puerto/base`, que tiene prioridad sobre las demas.
+
+En Render el contenedor arranca Apache en el puerto que indica la plataforma y aplica las
+migraciones antes de recibir trafico. `SKIP_MIGRATIONS=1` desactiva ese paso.
+
+---
+
+## Limitaciones conocidas
+
+Estas limitaciones son reales y estan pendientes de resolverse:
+
+1. **Los nombres de base de datos son globales en MySQL.** Si dos usuarios quieren una base con
+   el mismo nombre, el segundo alta falla. No hay un espacio de nombres por usuario.
+2. **La consola SQL es de solo lectura.** No hay forma de ejecutar `INSERT`, `UPDATE` ni
+   `DELETE` desde la interfaz. Los cambios de datos pasan por el CRUD de registros.
+3. **No hay verificacion de correo ni restablecimiento de contrasena.** Requieren un proveedor
+   de correo que no forma parte de este proyecto.
+4. **Los avatares se guardan en disco.** En un despliegue efimero se pierden al redesplegar.
+   La solucion definitiva es un almacenamiento externo.
+5. **La base de datos de sistema debe existir.** En proveedores que bloquean
+   `CREATE DATABASE` (TiDB Cloud Serverless, PlanetScale) hay que crearla a mano.
+6. **No hay interaccion en tiempo real.** No hay websockets ni sondeo: la pagina refleja el
+   estado en el momento de cargarla.
+7. **El busquador de la consola no distingue mayusculas ni acentos.** Usa `LIKE` con el
+   collation por defecto de MySQL.
+8. **La cuenta de un usuario no puede renombrar sus bases de datos.** Se pueden crear y
+   eliminar, no renombrar.
+
+---
+
+## Estructura del proyecto
 
 ```
 dataforge/
-├── 🐳 Dockerfile              # Imagen PHP 8.2 + Apache
-├── 🐳 docker-compose.yml      # PHP + MySQL + phpMyAdmin + Redis
-├── 🐳 docker/                 # Configs Docker (apache.conf, entrypoint.sh)
-├── ☁️  render.yaml             # Blueprint para deploy en Render
-│
-├── ⚙️  config.php              # Configuración centralizada (.env loader)
-├── 📄 .env.example             # Template de variables de entorno
-│
-├── 🏠 index.php                # Landing page
-├── 📊 dashboard.php            # Panel principal post-login
-├── 📖 documentacion.php        # Documentación integrada
-├── 🧪 inyeccion_datos.php      # Seeder de datos de prueba
-│
-├── src/                        # 🏗️ Clases OOP (Refactor v3.2)
-│   ├── autoload.php            # PSR-4 autoloader
-│   ├── Config.php              # Gestión de configuración
-│   ├── Auth.php                # Autenticación & sesiones
-│   ├── Database.php            # Conexiones & gestión de DBs
-│   └── CRUD.php                # Operaciones de tablas & registros
-│
-├── auth/                       # 🔐 Autenticación
-│   ├── auth_functions.php      # Funciones core (bcrypt, migraciones)
-│   ├── login.php / register.php
-│   ├── onboarding.php          # Selección de tema inicial
-│   └── logout.php
-│
-├── includes/                   # 🧩 Componentes compartidos
-│   ├── header.php / footer.php # Templates HTML
-│   ├── csrf.php                # Protección CSRF
-│   ├── flash.php               # Toast notifications
-│   └── security.php            # CSP + Rate Limiting + Sanitización
-│
-├── database/                   # 🗄️ Gestión de bases de datos
-├── tables/                     # 📊 Gestión de tablas
-├── records/                    # 📝 Gestión de registros
-├── account/                    # 👤 Perfil de usuario
-│
-├── tests/                      # 🧪 PHPUnit tests
-│   ├── AuthTest.php
-│   ├── CRUDTest.php
-│   └── SecurityTest.php
-│
-├── style.css / themes.css      # 🎨 Design system + 7 temas
-└── img/                        # 🖼️ Assets estáticos
+├── public/                # unico directorio expuesto por HTTP
+│   ├── index.php          # front controller
+│   ├── .htaccess          # reescritura y bloqueos
+│   └── assets/            # CSS, JavaScript
+├── src/
+│   ├── Core/              # peticion, respuesta, router, middleware, vistas
+│   ├── Http/              # controladores y middleware
+│   ├── Service/           # reglas de negocio
+│   ├── Repository/        # acceso a datos
+│   ├── Database/          # conexiones, migraciones, tipos de columna
+│   ├── Security/          # CSRF, sesiones, contrasenas, rate limit, cabeceras
+│   ├── Support/           # validacion, identificadores, tema, rutas, log
+│   ├── Exception/         # excepciones del dominio
+│   └── Providers/         # registro de dependencias
+├── config/                # app, base de datos, seguridad y rutas
+├── templates/             # layouts, partials y paginas
+├── database/migrations/   # esquema versionado
+├── tests/                 # Unit, Feature y Support
+├── storage/               # logs, cache, sesiones y avatares (fuera del repo)
+├── bin/console            # consola de administracion
+├── docker/                # configuracion de Apache, PHP e inicializacion de MySQL
+├── .github/workflows/     # CI
+├── composer.json
+├── docker-compose.yml
+├── Dockerfile
+├── render.yaml
+└── phpstan.neon
 ```
 
 ---
 
-## 🛠️ Stack Tecnológico
+## Documentacion adicional
 
-| Capa | Tecnología |
-|------|-----------|
-| **Backend** | PHP 8.2 nativo (sin frameworks) |
-| **Base de datos** | MySQL 8.0 |
-| **Frontend** | HTML5, CSS3 (Glassmorphism), JavaScript vanilla |
-| **Contenedores** | Docker + Docker Compose |
-| **Testing** | PHPUnit 10 |
-| **CI/CD** | Render (auto-deploy desde GitHub) |
-| **Cache/Rate Limit** | Redis 7 (opcional, fallback a filesystem) |
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): arquitectura y decisiones de diseno
+- [SECURITY.md](SECURITY.md): modelo de amenazas y medidas pendientes
+- [CONTRIBUTING.md](CONTRIBUTING.md): como ejecutar y probar el proyecto
+- [CHANGELOG.md](CHANGELOG.md): cambios por version
 
 ---
 
-## 📄 Licencia
+## Licencia
 
-Este proyecto está bajo la [Licencia MIT](LICENSE).
-
-<p align="center">
-  Construido por <strong>Raju Technology</strong>
-</p>
+MIT. Ver [LICENSE](LICENSE).

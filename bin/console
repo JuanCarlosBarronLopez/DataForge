@@ -1,0 +1,89 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use DataForge\Core\Application;
+use DataForge\Database\Migrator;
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+
+$application = new Application(dirname(__DIR__));
+$container   = $application->container();
+
+$command = $argv[1] ?? 'help';
+
+$output = static function (string $line = ''): void {
+    fwrite(STDOUT, $line . PHP_EOL);
+};
+
+switch ($command) {
+    case 'migrate':
+        $migrator = new Migrator(
+            $container->get(\DataForge\Database\ConnectionFactory::class),
+            dirname(__DIR__) . '/database/migrations',
+            $container->get(\PDO::class),
+        );
+
+        $applied = $migrator->migrate();
+
+        if ($applied === []) {
+            $output('No hay migraciones pendientes.');
+
+            break;
+        }
+
+        foreach ($applied as $migration) {
+            $output('Aplicada: ' . $migration);
+        }
+
+        break;
+
+    case 'migrate:status':
+        $migrator = new Migrator(
+            $container->get(\DataForge\Database\ConnectionFactory::class),
+            dirname(__DIR__) . '/database/migrations',
+            $container->get(\PDO::class),
+        );
+
+        $pending = $migrator->pending();
+
+        if ($pending === []) {
+            $output('Todas las migraciones estan aplicadas.');
+
+            break;
+        }
+
+        $output('Pendientes:');
+
+        foreach ($pending as $migration) {
+            $output('  - ' . $migration);
+        }
+
+        break;
+
+    case 'routes':
+        $routes = require dirname(__DIR__) . '/config/routes.php';
+
+        foreach ($routes as $definition) {
+            $output(sprintf('%-6s %s', $definition[0], $definition[1]));
+        }
+
+        break;
+
+    case 'version':
+        $output('DataForge ' . (string) $container->get(\DataForge\Core\Config::class)->get('app.version', '4.0.0'));
+        $output('PHP ' . PHP_VERSION);
+
+        break;
+
+    default:
+        $output('DataForge - consola de administracion');
+        $output('');
+        $output('  migrate          Aplica las migraciones pendientes');
+        $output('  migrate:status   Muestra las migraciones pendientes');
+        $output('  routes           Lista las rutas registradas');
+        $output('  version          Muestra la version de la aplicacion y de PHP');
+
+        break;
+}

@@ -1,44 +1,44 @@
-# Version control
+# Control de versiones
 .git
 .gitignore
+.gitattributes
 
-# IDE & Editor
+# Entorno
+.env
+.env.*
+
+# Dependencias
+vendor/
+node_modules/
+
+# Artefactos de construccion y pruebas
+build/
+.phpunit.cache/
+.phpunit.result.cache
+.php-cs-fixer.cache
+
+# Registros y archivos generados en tiempo de ejecucion
+storage/logs/*
+storage/cache/*
+storage/framework/*
+storage/uploads/*
+!storage/**/.gitkeep
+!storage/**/.gitignore
+
+# Documentacion interna de desarrollo
+docs/private/
+
+# Archivos de sistema y editores
 .vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
-
-# Environment (will be injected via Docker env vars)
-.env
-
-# Dependencies (rebuilt in container)
-vendor/
-node_modules/
-
-# Logs (created fresh in container)
-logs/
-
-# Documentation artifacts
-docs/
-*.docx
-*.pdf
-documentoProyectoIntegrador_RAJU.docx
-
-# OS files
+*.swp
 .DS_Store
 Thumbs.db
-desktop.ini
 
-# Docker files (no need to copy into image)
-docker-compose.yml
-docker-compose.override.yml
-
-# Tests (not needed in production image)
-tests/
-phpunit.xml
-
-# Temp files
+# Temporales
 *.tmp
 *.bak
 *.cache
-.phpunit.result.cache
+*.log
