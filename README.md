@@ -8,23 +8,9 @@
 
 ---
 
-## Contexto
-
-Proyecto académico en equipo de la **UTSJR**. Mi rol: **arquitecto de software y líder del equipo**: arquitectura, flujos de autenticación y tiempo real, planeación y reparto de tareas.
-
-La versión que ves ahora es una reescritura completa del núcleo. La v3.2 era un conjunto de scripts PHP con lógica duplicada y funciones globales; esta versión es una aplicación por capas con front controller, cadena de middleware y repositorios sobre PDO.
-
-**Autoría:** OMNARA, fundada por mí. Yo soy el creador y desarrollador de este proyecto.
-
-<!-- TODO: número de integrantes -->
-
-**Equipo de mantenimiento actual:** 1 persona (Juan Carlos Barrón López), como líder técnico.
-
----
-
 ## Características verificadas
 
-Cada punto de esta lista se corresponde con código del repositorio.
+Cada punto de esta lista corresponde a código del repositorio.
 
 | Funcionalidad | Dónde está |
 |---|---|
@@ -54,14 +40,14 @@ graph TD
     FC --> MW{{"Cadena de middleware"}}
     MW --> S1["Cabeceras de seguridad<br/>CSP con nonce"]
     MW --> S2["Manejo de errores"]
-    MW --> S3["Sesion endurecida"]
+    MW --> S3["Sesión endurecida"]
     MW --> S4["Rate limiting"]
 
-    S4 --> Router["Router<br/>rutas con parametros"]
+    S4 --> Router["Router<br/>rutas con parámetros"]
 
     Router --> RMW{{"Middleware de la ruta"}}
-    RMW --> R1["CSRF por accion"]
-    RMW --> R2["Autenticacion"]
+    RMW --> R1["CSRF por acción"]
+    RMW --> R2["Autenticación"]
 
     R2 --> Controller["Controlador<br/>src/Http/Controller"]
     Controller --> Service["Servicio<br/>src/Service<br/>reglas de negocio"]
@@ -85,7 +71,7 @@ graph TD
     style SSE fill:#2a1f1c,stroke:#c87941,color:#e9ecf1
 ```
 
-Detalle de cada decisión en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+El detalle de cada decisión está en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 
@@ -211,72 +197,74 @@ Detalles del contenedor:
 
 ## Decisiones de diseño
 
-**Sin framework, y por qué.** El valor de un proyecto académico está en los mecanismos, no en
-aprender una API. Un framework habría cambiado la pregunta de "cómo funciona esto" por "cómo se
-configura esto". El coste son unas 900 líneas propias, todas cubiertas por pruebas.
+**Sin framework.** El valor de un proyecto está en los mecanismos, no en aprender una API. Un
+framework habría cambiado la pregunta de "cómo funciona esto" por "cómo se configura esto". El
+coste es escribir a mano el enrutador, el contenedor, las plantillas y el manejo de errores, y
+que todo eso tenga que estar cubierto por pruebas.
 
-**Front controller y directorio único.** Todo el tráfico entra por `public/index.php` y Apache
-sirve `public/` como `DocumentRoot`. Es la única forma de que `src/`, `config/` y `storage/` no
-sean descargables por error. La v3.2 tenía la raíz del proyecto como `DocumentRoot` y dependía
-de bloquear carpetas con `.htaccess`: un archivo mal puesto dejaba el código expuesto.
+**Front controller y directorio único.** Todo el tráfico entra por `public/index.php` y Apache sirve
+`public/` como `DocumentRoot`. Es la única forma de que `src/`, `config/` y `storage/` no sean
+descargables por error: si el directorio publicado es la raíz del proyecto, la seguridad depende
+de acertar con los `.htaccess`.
 
 **Identificadores con lista blanca, no con escape.** PDO no admite marcadores para nombres de
-objeto, así que los nombres de base, tabla y columna tienen que interpolarse. La v3.2 usaba
-`real_escape_string()`, que **no escapa el acento grave**: un nombre de tabla podía cerrar el
-identificador y continuar la sentencia. Ahora todo identificador pasa por
+objeto, así que los nombres de base, tabla y columna tienen que interpolarse. Escaparlos con
+`real_escape_string()` no sirve: no escapa el acento grave, de modo que un nombre de tabla puede
+cerrar el identificador y continuar la sentencia. Por eso todo identificador pasa por
 `DataForge\Support\Identifier`, que solo admite `[A-Za-z0-9_]{1,64}`.
 
-**Consultas parametrizadas de verdad.** PDO con `ATTR_EMULATE_PREPARES => false`: los
-marcadores los resuelve el servidor, no PHP.
+**Consultas parametrizadas de verdad.** PDO con `ATTR_EMULATE_PREPARES => false`: los marcadores
+los resuelve el servidor, no PHP.
 
-**Aislamiento entre cuentas.** La v3.2 era "multiusuario" solo en el sentido de que varias
-cuentas podían entrar: cualquier usuario autenticado veía y modificaba **todas** las bases del
-servidor, incluida la del sistema, con los hashes de contraseña a la vista. La tabla
-`managed_databases` registra el propietario y toda operación comprueba esa propiedad.
+**Aislamiento entre cuentas.** Cada base de datos tiene un propietario registrado y toda operación
+comprueba esa propiedad. Es la diferencia entre "varias cuentas pueden entrar" y "cada cuenta ve
+lo suyo".
 
-**Consola SQL de solo lectura.** Una consola que ejecuta lo que se le escriba convierte
-cualquier fallo de autorización en escritura arbitraria. `SqlGuard` acepta un único enunciado
-de lectura, aplica un límite de filas y fija un tiempo de ejecución máximo.
+**Consola SQL de solo lectura.** Una consola que ejecuta lo que se le escriba convierte cualquier
+fallo de autorización en escritura arbitraria. `SqlGuard` acepta un único enunciado de lectura,
+aplica un límite de filas y fija un tiempo de ejecución máximo.
 
 **Escape de la salida exigible.** El escape puede quedar en manos de quien escribe la vista.
 `bin/check-escape.php` revisa las 200 expresiones de las plantillas y falla la integración
-continua si alguna imprime un dato sin pasar por `e()`. Es una afirmación que se puede
-comprobar, no una promesa.
+continua si alguna imprime un dato sin pasar por `e()`. Es una afirmación que se puede comprobar,
+no una promesa.
 
-**Tiempo real con Server-Sent Events.** El panel se actualiza con un canal SSE nativo, sin
-bibliotecas de cliente ni websockets. El canal se cierra a los cinco minutos y el navegador lo
-reabre solo.
+**Tiempo real con Server-Sent Events.** El panel muestra métricas que dependen de MySQL: contar
+filas de todas las tablas en cada recarga es caro y el usuario ve números obsoletos. SSE es la
+solución más simple que no necesita librerías de cliente ni un servidor de eventos aparte: es
+HTTP nativo con `text/event-stream`.
 
 ---
 
-## Estado del proyecto y deuda técnica conocida
+## Estado del proyecto
 
-Estado verificado sobre la rama actual: 135 pruebas en verde, PHPStan nivel 8 sin avisos,
-PHP-CS-Fixer sin cambios pendientes, Lighthouse 100 en accesibilidad, buenas prácticas y SEO, y
-el recorrido completo de la interfaz comprobado en navegador sin errores de consola.
+Verificado sobre la rama actual: **135 pruebas en verde**, PHPStan nivel 8 sin avisos, PHP-CS-Fixer
+sin cambios pendientes, Lighthouse 100 en accesibilidad, buenas prácticas y SEO, y el recorrido
+completo de la interfaz comprobado en navegador sin errores de consola.
 
-Lo que **no** está hecho, y conviene saber antes de usarlo en producción:
+**En producción hoy:**
 
-1. **Los nombres de base de datos son globales en MySQL.** Dos usuarios no pueden tener una
-   base con el mismo nombre. No hay espacio de nombres por usuario.
-2. **La consola SQL es de solo lectura.** No hay forma de ejecutar `INSERT`, `UPDATE` ni
-   `DELETE` desde la interfaz.
-3. **No hay verificación de correo ni restablecimiento de contrasena.** Requieren un proveedor
-   de correo que no forma parte del proyecto.
-4. **Los avatares se guardan en disco.** En un despliegue efimero se pierden al redesplegar.
-5. **La base de datos de sistema debe existir.** En proveedores que bloquean `CREATE DATABASE`
-   (TiDB Cloud Serverless, PlanetScale) hay que crearla a mano.
-6. **Las sesiones viven en archivos.** Con más de una instancia de la aplicación no se
-   comparten: habría que migrarlas a Redis o a una tabla.
-7. **Cada canal SSE ocupa un proceso de PHP** durante su duración. Con pocos usuarios es
-   imperceptible; con muchos habría que pasar a un servidor de eventos.
-8. **No hay API REST.** El enrutador y los servicios ya están preparados, pero no hay superficie
-   HTTP adicional que proteger.
-9. **No hay cola de trabajos.** Las exportaciones grandes se generan de forma síncrona.
-10. **No hay copia de seguridad automatizada** de `storage/` ni de las bases de datos del
-    usuario: dependen del operador.
-11. **La búsqueda no distingue mayúsculas ni acentos**: usa el `collation` por defecto de MySQL.
-12. **No se puede renombrar una base de datos** desde la interfaz.
+- Cuentas de usuario con aislamiento de bases de datos por propietario.
+- Ciclo completo de gestión: bases, tablas, estructura, registros y bitácora.
+- Consola SQL de solo lectura con historial.
+- Panel en vivo por Server-Sent Events.
+- Exportación CSV y volcado SQL.
+- Siete paletas y modo claro/oscuro.
+- Migraciones versionadas, CI con cuatro comprobaciones y despliegue con Docker Compose.
+
+**Pendiente, con el tamaño del trabajo estimado:**
+
+| Tarea | Por qué está pendiente |
+|---|---|
+| Verificación de correo y restablecimiento de contraseña | Requiere un proveedor de correo que no forma parte del proyecto |
+| API REST | El enrutador y los servicios ya están preparados; falta la superficie HTTP y sus tokens |
+| Sesiones compartidas entre instancias | Hoy viven en archivos: con más de una instancia habría que migrarlas a Redis |
+| Escalado del canal de eventos | Cada conexión ocupa un proceso de PHP: con muchas simultáneas habría que pasar a un servidor de eventos |
+| Cola de trabajos | Las exportaciones grandes se generan de forma síncrona |
+| Copia de seguridad automatizada | `storage/` y las bases del usuario dependen hoy del operador |
+| Nombres de base de datos por usuario | MySQL tiene un espacio de nombres global: dos usuarios no pueden usar el mismo nombre |
+| Búsqueda con acentos y mayúsculas | La búsqueda usa el `collation` por defecto de MySQL |
+| Renombrar una base de datos | La interfaz solo permite crearlas y eliminarlas |
 
 Detalle del modelo de amenazas, de lo que sí está implementado y de lo que falta, en
 [SECURITY.md](SECURITY.md).
@@ -294,4 +282,4 @@ Detalle del modelo de amenazas, de lo que sí está implementado y de lo que fal
 
 ## Licencia
 
-MIT. Ver [LICENSE](LICENSE).
+MIT. Ver [LICENSE](LICENSE). Proyecto de OMNARA.

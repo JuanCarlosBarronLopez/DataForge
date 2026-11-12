@@ -65,9 +65,9 @@ manejo de errores. Son unas 900 lineas en total, y cada una esta cubierta por pr
 `DocumentRoot`. El codigo, las plantillas, las migraciones y los registros quedan fuera del
 directorio accesible.
 
-**Por que.** Es la unica forma de que `src/`, `config/` y `storage/` no sean descargables por
-error. En la version 3.2 la raiz del proyecto era el `DocumentRoot` y bastaba con bloquear
-algunas carpetas con `.htaccess`: un `.htaccess` mal puesto dejaba el codigo expuesto.
+**Por que.** Si el directorio publicado es la raiz del proyecto, la seguridad depende de acertar
+con los `.htaccess` de cada carpeta: uno mal puesto deja el codigo expuesto. Con un unico
+directorio publico, esa clase de error desaparece.
 
 **Consecuencia.** Las rutas publicas son absolutas (`/databases`, `/login`). Los enlaces se
 construyen con `DataForge\Support\Url` para que la ruta del formulario y la del token CSRF
@@ -127,10 +127,10 @@ Identifier::quote('mi tabla');   // InvalidArgumentException
 ```
 
 **Por que.** PDO no admite marcadores para nombres de objeto, asi que hay que interpolarlos.
-La version 3.2 usaba `real_escape_string()`, que **no escapa el acento grave**, de modo que
-un nombre de tabla podia cerrar el identificador y continuar la sentencia. La lista blanca
-`[A-Za-z0-9_]{1,64}` elimina esa clase de fallo por completo, y despues se entrecomilla
-como segunda barrera.
+Escaparlos con `real_escape_string()` no es suficiente: **no escapa el acento grave**, de modo
+que un nombre de tabla puede cerrar el identificador y continuar la sentencia. La lista blanca
+`[A-Za-z0-9_]{1,64}` elimina esa clase de fallo por completo, y despues se entrecomilla como
+segunda barrera.
 
 **Consecuencia.** No se pueden crear tablas ni columnas con acentos, espacios ni guiones
 medios. Es una restriccion aceptable a cambio de una garantia simple de revisar.
@@ -154,17 +154,16 @@ estable y se puede parametrizar.
 **Decision.** La tabla `managed_databases` registra que usuario es propietario de cada base de
 datos. Toda operacion sobre una base comprueba esa propiedad.
 
-**Por que.** En la version 3.2 la aplicacion era "multiusuario" solo en el sentido de que
-varias cuentas podian entrar: cualquier usuario autenticado veia, abria, modificaba y
-eliminaba **todas** las bases de datos del servidor MySQL. Cuatro consecuencias concretas:
+**Por que.** Sin un registro de propiedad, la aplicacion es "multiusuario" solo en el sentido de
+que varias cuentas pueden entrar: cualquier usuario autenticado ve, abre, modifica y elimina
+**todas** las bases de datos del servidor MySQL. Cuatro consecuencias concretas:
 
-- La base de datos de sistema (`dataforge_system`) no estaba en la lista de bases protegidas,
-  asi que `eliminar_db.php` podia ejecutar `DROP DATABASE dataforge_system` y borrar todas las
-  cuentas.
-- `records.php?dbName=dataforge_system&tableName=users` mostraba el `password_hash` de todos
-  los usuarios a cualquiera que hubiera iniciado sesion.
-- La tabla `users` se podia editar y borrar desde el CRUD habitual.
-- No habia forma de saber quien habia hecho que.
+- La base de datos de sistema (`dataforge_system`) queda expuesta: se puede ejecutar
+  `DROP DATABASE dataforge_system` y borrar todas las cuentas.
+- `records.php?dbName=dataforge_system&tableName=users` muestra el `password_hash` de todos
+  los usuarios a cualquiera que haya iniciado sesion.
+- La tabla `users` se puede editar y borrar desde el CRUD habitual.
+- No hay forma de saber quien ha hecho que.
 
 **Consecuencia.** El modelo es mas correcto pero tambien mas restrictivo: una base de datos
 creada por fuera de la aplicacion no es visible hasta que su propietario la registre. Hoy no
@@ -190,10 +189,10 @@ Redis o a una tabla.
 `random_bytes(32)`, se compara con `hash_equals()` y se consume despues de **cada** intento,
 incluidos los fallidos.
 
-**Por que.** La version 3.2 usaba un unico token por sesion compartido por todos los
-formularios. Eso tiene dos fallos: un token capturado servia para cualquier accion, y un
-intento fallido destruia el token de todas las pestanas abiertas, lo que hacia fallar el
-formulario que el usuario estuviera usando en otra pestana.
+**Por que.** Un token unico por sesion compartido por todos los formularios tiene dos fallos: un
+token capturado sirve para cualquier accion, y un intento fallido destruye el token de todas las
+pestanas abiertas, lo que hace fallar el formulario que el usuario estuviera usando en otra
+pestana. Un token por accion elimina los dos.
 
 **Consecuencia.** La validacion necesita que la ruta de destino se escriba dos veces: una en
 el `action` del formulario y otra en el token. `Url` centraliza la construccion de rutas para
@@ -232,9 +231,9 @@ reglas de propiedad y deja rastro en la bitacora.
 escapar o sin una funcion del catalogo permitido.
 
 **Por que.** "Todos los datos se escapan" es una afirmacion que se puede comprobar o no
-comprobar. En la version 3.2 la afirmacion era falsa: `profile.php` y `header.php` inyectaban
-el nombre de usuario y la ruta del avatar sin escapar, y `set_table_form.php` metia nombres
-de columna en `innerHTML` con `json_encode` sin `JSON_HEX_TAG`.
+comprobar. En la v3.2 la afirmacion era falsa: `profile.php` y `header.php` inyectaban el nombre
+de usuario y la ruta del avatar sin escapar, y `set_table_form.php` metia nombres de columna en
+`innerHTML` con `json_encode` sin `JSON_HEX_TAG`.
 
 **Consecuencia.** El motor de plantillas sigue siendo PHP plano, pero el helper `e()` es la
 forma unica de imprimir datos y la comprobacion automatica cubre el resto. El coste es un
