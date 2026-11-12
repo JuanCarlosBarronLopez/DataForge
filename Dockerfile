@@ -1,66 +1,58 @@
 # ============================================
-# DataForge CRUD Manager — Production Dockerfile
+# DataForge - Imagen de produccion
 # ============================================
-# Multi-stage ready PHP 8.2 + Apache image
-# Supports Render/Railway via $PORT env variable
+# Construye la aplicacion con sus dependencias y la deja servida por Apache
+# con el front controller en public/.
 #
-# Usage:
+# Construccion:
 #   docker build -t dataforge .
-#   docker run -p 8080:80 dataforge
+#   docker run --rm -p 8080:80 -e DB_HOST=... dataforge
 
-FROM php:8.2-apache
+FROM php:8.4-apache
 
-LABEL maintainer="Raju Technology"
-LABEL description="DataForge CRUD Manager — Professional MySQL Management"
-
-# ─── Install PHP Extensions ──────────────────────────────────────────────────
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
         libpng-dev \
         libjpeg-dev \
         libfreetype6-dev \
         libzip-dev \
         unzip \
-        curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        mysqli \
+    && docker-php-ext-install -j"$(nproc)" \
         pdo_mysql \
+        mysqli \
         gd \
         zip \
-    && apt-get purge -y --auto-remove \
+        opcache \
+    && a2enmod rewrite headers \
     && rm -rf /var/lib/apt/lists/*
 
-# ─── Enable Apache Modules ──────────────────────────────────────────────────
-RUN a2enmod rewrite headers
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# ─── Copy Custom Apache Config ──────────────────────────────────────────────
+ENV COMPOSER_ALLOW_SUPERUSER=1 \
+    COMPOSER_NO_INTERACTION=1
+
+WORKDIR /var/www/html
+
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
+COPY docker/apache-global.conf /etc/apache2/conf-available/dataforge.conf
+RUN a2enconf dataforge
 
-# ─── Copy Application Code ──────────────────────────────────────────────────
-COPY . /var/www/html/
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --prefer-dist --optimize-autoloader --no-progress
 
-# ─── Set Permissions ────────────────────────────────────────────────────────
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && mkdir -p /var/www/html/uploads/avatars \
-    && mkdir -p /var/www/html/logs/rate_limits \
-    && chown -R www-data:www-data /var/www/html/uploads \
-    && chown -R www-data:www-data /var/www/html/logs
+COPY . .
+RUN composer dump-autoload --optimize --no-dev --no-scripts \
+    && chmod +x bin/console \
+    && mkdir -p storage/logs storage/cache/rate-limit storage/framework/sessions storage/uploads/avatars \
+    && chown -R www-data:www-data storage \
+    && chmod -R 750 storage
 
-# ─── PHP Configuration ──────────────────────────────────────────────────────
-RUN echo "upload_max_filesize = 10M" > /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "post_max_size = 12M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "memory_limit = 128M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "max_execution_time = 30" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "session.cookie_httponly = 1" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "session.cookie_samesite = Strict" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "expose_php = Off" >> /usr/local/etc/php/conf.d/uploads.ini
-
-# ─── Copy Entrypoint ────────────────────────────────────────────────────────
+COPY docker/php-production.ini /usr/local/etc/php/conf.d/dataforge.ini
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# ─── Expose & Run ───────────────────────────────────────────────────────────
 EXPOSE 80
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["apache2-foreground"]

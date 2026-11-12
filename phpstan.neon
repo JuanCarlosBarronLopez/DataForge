@@ -1,0 +1,19 @@
+parameters:
+    level: 8
+    phpVersion: 80400
+    paths:
+        - src
+        - config
+        - public
+        - tests
+    excludePaths:
+        analyse:
+            - build (?)
+            - storage (?)
+            - vendor
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        -
+            identifier: missingType.iterableValue
+            path: tests/*

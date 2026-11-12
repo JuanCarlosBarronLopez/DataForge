@@ -1,0 +1,19 @@
+# Normaliza los finales de linea a LF en el repositorio.
+* text=auto eol=lf
+
+*.php  text diff=php
+*.css  text diff=css
+*.js   text diff=javascript
+*.md   text
+*.yml  text
+*.yaml text
+*.json text
+
+# Binarios
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.ico  binary
+*.woff binary
+*.woff2 binary

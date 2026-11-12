@@ -1,46 +1,44 @@
-# Environment & Credentials
+# Entorno y credenciales
 .env
+.env.*
+!.env.example
 
-# IDE & Editor
-.vscode/
-.idea/
+# Dependencias gestionadas por Composer
+/vendor/
+
+# Artefactos de compilacion, pruebas y analisis
+/build/
+
+# Directorios de trabajo en tiempo de ejecucion. Se versionan las carpetas
+# vacias (con su .gitignore) para que existan en un clon nuevo.
+/storage/**
+!/storage/logs/
+!/storage/cache/
+!/storage/framework/
+!/storage/framework/sessions/
+!/storage/uploads/
+!/storage/uploads/avatars/
+!/storage/**/.gitkeep
+!/storage/**/.gitignore
+
+# PHPUnit
+/.phpunit.cache/
+.phpunit.result.cache
+
+# Archivos de sistema y editores
+/.vscode/
+/.idea/
 *.sublime-project
 *.sublime-workspace
 *.swp
 *.swo
 *~
-
-# OS Files
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# PHP / Composer
-vendor/
-composer.lock
-
-# Logs
-*.log
-error_log
-logs/rate_limits/
-
-# Binary assets (keep tracked via Git LFS or exclude)
-*.pdf
-*.docx
-
-# Temporary files
+# Temporales
 *.tmp
 *.bak
 *.cache
-
-# PHPUnit
-.phpunit.cache/
-.phpunit.result.cache
-
-# User uploads (generated at runtime)
-uploads/avatars/*
-!uploads/avatars/.gitkeep
-
-# Docker volumes (local only)
-dataforge-db-data/
-dataforge-redis-data/
+*.log

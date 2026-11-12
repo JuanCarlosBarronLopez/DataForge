@@ -1,15 +1,14 @@
 # ============================================
-# DataForge CRUD Manager — Docker Compose
+# DataForge - Entorno de desarrollo con Docker
 # ============================================
-# Services: PHP/Apache + MySQL 8.0 + phpMyAdmin + Redis
+# Servicios: PHP/Apache + MySQL 8.4 + phpMyAdmin + Redis
 #
-# Usage:
+# Uso:
 #   docker compose up -d --build
-#   Open: http://localhost:8080 (DataForge)
-#         http://localhost:8081 (phpMyAdmin)
+#   App:        http://localhost:8080
+#   phpMyAdmin: http://localhost:8081
 
 services:
-  # ─── PHP Application ─────────────────────────────────────────────────────
   app:
     build:
       context: .
@@ -18,34 +17,45 @@ services:
     restart: unless-stopped
     ports:
       - "${APP_PORT:-8080}:80"
-    volumes:
-      - .:/var/www/html
-      - ./uploads:/var/www/html/uploads
-      - ./logs:/var/www/html/logs
     environment:
       DB_HOST: db
       DB_PORT: 3306
       DB_USER: ${DB_USER:-dataforge}
       DB_PASS: ${DB_PASS:-dataforge_secret}
       DB_CHARSET: utf8mb4
+      SYSTEM_DB: ${SYSTEM_DB:-dataforge_system}
       APP_ENV: ${APP_ENV:-development}
       APP_DEBUG: ${APP_DEBUG:-true}
-      APP_NAME: "DataForge CRUD Manager"
-      APP_VERSION: "3.2.0"
-      APP_URL: "http://localhost:${APP_PORT:-8080}"
-      SYSTEM_DB: ${SYSTEM_DB:-dataforge_system}
+      APP_NAME: ${APP_NAME:-DataForge}
+      APP_VERSION: ${APP_VERSION:-4.0.0}
+      APP_URL: http://localhost:${APP_PORT:-8080}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       RATE_LIMIT_STORAGE: ${RATE_LIMIT_STORAGE:-file}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-120}
+      RATE_LIMIT_WINDOW: ${RATE_LIMIT_WINDOW:-60}
+      RATE_LIMIT_LOGIN_MAX: ${RATE_LIMIT_LOGIN_MAX:-10}
+      RATE_LIMIT_LOGIN_WINDOW: ${RATE_LIMIT_LOGIN_WINDOW:-300}
+      SESSION_IDLE_TIMEOUT: ${SESSION_IDLE_TIMEOUT:-1800}
+      SESSION_ABSOLUTE_TIMEOUT: ${SESSION_ABSOLUTE_TIMEOUT:-28800}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
+    volumes:
+      - .:/var/www/html
+      - ./storage:/var/www/html/storage
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
       db:
         condition: service_healthy
     networks:
       - dataforge-network
 
-  # ─── MySQL Database ──────────────────────────────────────────────────────
   db:
-    image: mysql:8.0
+    image: mysql:8.4
     container_name: dataforge-db
     restart: unless-stopped
     ports:
@@ -57,16 +67,16 @@ services:
       MYSQL_PASSWORD: ${DB_PASS:-dataforge_secret}
     volumes:
       - dataforge-db-data:/var/lib/mysql
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_secret}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root_secret}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
       start_period: 30s
     networks:
       - dataforge-network
 
-  # ─── phpMyAdmin ──────────────────────────────────────────────────────────
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
     container_name: dataforge-phpmyadmin
@@ -76,8 +86,6 @@ services:
     environment:
       PMA_HOST: db
       PMA_PORT: 3306
-      PMA_USER: root
-      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secret}
       UPLOAD_LIMIT: 50M
     depends_on:
       db:
@@ -85,9 +93,8 @@ services:
     networks:
       - dataforge-network
 
-  # ─── Redis (Rate Limiting & Cache) ───────────────────────────────────────
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: dataforge-redis
     restart: unless-stopped
     ports:
@@ -98,14 +105,12 @@ services:
     networks:
       - dataforge-network
 
-# ─── Volumes ───────────────────────────────────────────────────────────────
 volumes:
   dataforge-db-data:
     driver: local
   dataforge-redis-data:
     driver: local
 
-# ─── Networks ──────────────────────────────────────────────────────────────
 networks:
   dataforge-network:
     driver: bridge

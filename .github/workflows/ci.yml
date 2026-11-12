@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main, docs/portfolio-cleanup]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  calidad:
+    name: Estilo y analisis estatico
+    runs-on: ubuntu-latest
+    steps:
+      - name: Copiar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql, gd, mbstring
+          coverage: none
+
+      - name: Instalar dependencias
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Norma de estilo (PSR-12)
+        run: composer lint
+
+      - name: Analisis estatico (PHPStan nivel 8)
+        run: composer analyse
+
+  pruebas:
+    name: Pruebas
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root_secret
+          MYSQL_DATABASE: dataforge_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot_secret"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      APP_ENV: testing
+      DB_HOST: 127.0.0.1
+      DB_PORT: "3306"
+      DB_USER: root
+      DB_PASS: root_secret
+      SYSTEM_DB: dataforge_test
+      RATE_LIMIT_STORAGE: file
+    steps:
+      - name: Copiar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql, gd, mbstring
+          coverage: none
+
+      - name: Instalar dependencias
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Ejecutar la suite
+        run: vendor/bin/phpunit
+
+      - name: Guardar el informe de cobertura
+        if: matrix.php == '8.4'
+        continue-on-error: true
+        run: vendor/bin/phpunit --coverage-clover=build/coverage.xml --coverage-text
+
+  seguridad:
+    name: Comprobaciones de higiene del repositorio
+    runs-on: ubuntu-latest
+    steps:
+      - name: Copiar el repositorio
+        uses: actions/checkout@v4
+
+      - name: El archivo .env no debe estar versionado
+        run: |
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "::error::El archivo .env esta versionado"; exit 1
+          fi
+          echo "OK: .env no esta versionado"
+
+      - name: No debe haber registros ni archivos generados versionados
+        run: |
+          if git ls-files | grep -E '^(storage/(logs|cache|uploads|framework)/|uploads/)' | grep -v '\.gitignore$' | grep -v '\.gitkeep$'; then
+            echo "::error::Hay archivos generados versionados"; exit 1
+          fi
+          echo "OK: no hay archivos generados versionados"
+
+      - name: Buscar secretos evidentes
+        run: |
+          if git grep -nEI '(password|passwd|secret|api[_-]?key)[[:space:]]*=[[:space:]]*[A-Za-z0-9/+_-]{16,}' \
+             -- ':!*.example' ':!.env.example' ':!composer.lock'; then
+            echo "::error::Se detectaron posibles secretos"; exit 1
+          fi
+          echo "OK: no se detectaron secretos evidentes"
