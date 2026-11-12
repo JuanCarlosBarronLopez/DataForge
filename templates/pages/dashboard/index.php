@@ -31,18 +31,18 @@ use function format_datetime;
     </div>
 </header>
 
-<div class="stack">
+<div class="stack" data-live-feed>
     <div class="metrics">
         <div class="metric">
-            <div class="metric__value"><?= count($databases) ?></div>
+            <div class="metric__value" data-live-metric="databases"><?= (int) count($databases) ?></div>
             <div class="metric__label">Bases de datos tuyas</div>
         </div>
         <div class="metric">
-            <div class="metric__value"><?= $tableCount ?></div>
+            <div class="metric__value" data-live-metric="tables"><?= (int) $tableCount ?></div>
             <div class="metric__label">Tablas en total</div>
         </div>
         <div class="metric">
-            <div class="metric__value"><?= $rowCount ?></div>
+            <div class="metric__value" data-live-metric="rows"><?= (int) $rowCount ?></div>
             <div class="metric__label">Filas contadas</div>
         </div>
     </div>
@@ -51,7 +51,7 @@ use function format_datetime;
         <div class="alert alert--warning" role="status">
             <span class="alert__icon" aria-hidden="true">!</span>
             <span class="alert__body">
-                No se pudieron leer <?= count($unreadable) ?> base(s): <?= e(implode(', ', $unreadable)) ?>.
+                No se pudieron leer <?= (int) count($unreadable) ?> base(s): <?= e(implode(', ', $unreadable)) ?>.
                 El servidor MySQL las reporta pero la cuenta no tiene permiso de lectura.
             </span>
         </div>
@@ -101,35 +101,33 @@ use function format_datetime;
             <section class="panel">
                 <div class="panel__head">
                     <h2 class="section-title">Actividad reciente</h2>
-                    <a class="btn btn--ghost btn--sm" href="<?= Url::activity() ?>">Bitacora completa</a>
+                    <span class="badge" data-live-status aria-live="polite">Conectando</span>
                 </div>
                 <div class="panel__body panel__body--flush">
                     <?php if ($activity === []): ?>
-                        <div class="state" style="margin:var(--space-5)">
+                        <div class="state" style="margin:var(--space-5)" data-live-empty>
                             <p class="state__title">Sin actividad todavia</p>
                             <p class="state__text">
                                 Cada operacion que cambie datos quedara registrada aqui, con la fecha y el objetivo.
                             </p>
                         </div>
-                    <?php else: ?>
-                        <ul class="feed">
-                            <?php foreach ($activity as $entry): ?>
-                                <li class="feed__item">
-                                    <span class="feed__mark feed__mark--<?= e((string) $entry['action']) ?>"
-                                          aria-hidden="true"></span>
-                                    <span>
-                                        <span class="badge"><?= e((string) $entry['action']) ?></span>
-                                        <span class="mono"><?= e((string) $entry['target_name']) ?></span>
-                                        <?php if (!empty($entry['db_context'])): ?>
-                                            <span class="muted">en</span>
-                                            <span class="mono"><?= e((string) $entry['db_context']) ?></span>
-                                        <?php endif ?>
-                                        <span class="feed__meta"><?= format_datetime((string) $entry['created_at']) ?></span>
-                                    </span>
-                                </li>
-                            <?php endforeach ?>
-                        </ul>
                     <?php endif ?>
+                    <ul class="feed" data-live-activity <?= $activity === [] ? 'hidden' : '' ?>>
+                        <?php foreach ($activity as $entry): ?>
+                            <li class="feed__item">
+                                <span class="feed__mark feed__mark--<?= e((string) $entry['action']) ?>" aria-hidden="true"></span>
+                                <span>
+                                    <span class="badge"><?= e((string) $entry['action']) ?></span>
+                                    <span class="mono"><?= e((string) ($entry['target_name'] ?? '')) ?></span>
+                                    <?php if (!empty($entry['db_context'])): ?>
+                                        <span class="muted">en</span>
+                                        <span class="mono"><?= e((string) $entry['db_context']) ?></span>
+                                    <?php endif ?>
+                                    <span class="feed__meta"><?= format_datetime((string) $entry['created_at']) ?></span>
+                                </span>
+                            </li>
+                        <?php endforeach ?>
+                    </ul>
                 </div>
             </section>
         </div>

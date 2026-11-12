@@ -8,10 +8,33 @@ use DataForge\Support\Theme;
 if (!function_exists('e')) {
     /**
      * Escapa un valor para insertarlo en HTML.
+     *
+     * Aceptar solo cadenas (strict_types) convertia un error de tipo en un
+     * fallo 500 con traza. Aqui los escalares se convierten y los tipos
+     * compuestos lanzan una excepcion con un mensaje util.
      */
-    function e(?string $value): string
+    function e(mixed $value): string
     {
-        return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8');
+        if ($value === null) {
+            return '';
+        }
+
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+
+        if (is_int($value) || is_float($value)) {
+            return (string) $value;
+        }
+
+        if (is_string($value)) {
+            return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8');
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'No se puede escapar un valor de tipo "%s". Conviertelo a cadena antes de imprimirlo.',
+            get_debug_type($value),
+        ));
     }
 }
 
@@ -19,7 +42,7 @@ if (!function_exists('attr')) {
     /**
      * Escapa un valor para insertarlo dentro de un atributo HTML.
      */
-    function attr(?string $value): string
+    function attr(mixed $value): string
     {
         return e($value);
     }
@@ -83,5 +106,25 @@ if (!function_exists('format_datetime')) {
         $timestamp = strtotime($value);
 
         return $timestamp === false ? 'sin registro' : date('d/m/Y H:i', $timestamp);
+    }
+}
+
+if (!function_exists('e_url')) {
+    /**
+     * Escapa un valor para usarlo dentro de una URL.
+     */
+    function e_url(?string $value): string
+    {
+        return rawurlencode((string) $value);
+    }
+}
+
+if (!function_exists('n')) {
+    /**
+     * Convierte un valor a entero para poder imprimirlo en un atributo.
+     */
+    function n(mixed $value): string
+    {
+        return (string) (int) $value;
     }
 }

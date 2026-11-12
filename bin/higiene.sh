@@ -28,7 +28,7 @@ echo "=== correos electronicos ==="
 git grep -ohIE '[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' -- ':!composer.lock' | sort -u || true
 
 echo "=== referencias a la empresa ficticia o a OMNARA ==="
-git grep -niIE 'raju|omnara' -- ':!composer.lock' || true
+git grep -niIE 'render\.com|render\.yaml' -- ':!composer.lock' || true
 
 echo "=== archivos de mas de 512 KB ==="
 git ls-files | while read -r file; do

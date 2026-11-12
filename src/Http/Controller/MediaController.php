@@ -52,11 +52,8 @@ final class MediaController extends Controller
             default => 'application/octet-stream',
         };
 
-        return (new Response($contents, 200, [
-            'Content-Type'           => $type,
-            'Content-Length'         => (string) strlen($contents),
-            'Cache-Control'          => 'private, max-age=3600',
-            'X-Content-Type-Options' => 'nosniff',
-        ]));
+        return Response::binary($contents, $type, [
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
     }
 }

@@ -29,11 +29,11 @@ final class SecurityHeadersTest extends TestCase
         self::assertStringContainsString("'nonce-nonce'", $directive);
     }
 
-    public function testNoEnviaXXssProtection(): void
+    public function testDesactivaElAuditorXssHeredado(): void
     {
         $headers = (new SecurityHeaders(false))->build('nonce');
 
-        self::assertArrayNotHasKey('X-XSS-Protection', $headers);
+        self::assertSame('0', $headers['X-XSS-Protection'] ?? null);
     }
 
     public function testEnviaHstsSoloEnProduccion(): void

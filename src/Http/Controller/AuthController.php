@@ -43,7 +43,7 @@ final class AuthController extends Controller
 
     public function login(): Response
     {
-        $email    = $this->request()->input('email', '')       ?? '';
+        $email    = $this->request()->input('email', '')    ?? '';
         $password = $this->request()->input('password', '') ?? '';
         $next     = $this->safeNext($this->request()->input('next', '') ?? '');
 
@@ -87,9 +87,9 @@ final class AuthController extends Controller
 
     public function register(): Response
     {
-        $username     = $this->request()->input('username', '')                 ?? '';
-        $email        = $this->request()->input('email', '')                    ?? '';
-        $password     = $this->request()->input('password', '')                 ?? '';
+        $username     = $this->request()->input('username', '')              ?? '';
+        $email        = $this->request()->input('email', '')                 ?? '';
+        $password     = $this->request()->input('password', '')              ?? '';
         $confirmation = $this->request()->input('password_confirmation', '') ?? '';
 
         try {

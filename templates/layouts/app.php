@@ -19,9 +19,7 @@ $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
 $isActive = static fn(string $target): string => $path === $target ? ' aria-current="page"' : '';
 
-$nonce      = csp_nonce();
-$csrf       = new DataForge\Security\Csrf(new DataForge\Security\SessionManager());
-$logoutCsrf = $csrf->field('/logout');
+$nonce = csp_nonce();
 ?>
 <!DOCTYPE html>
 <html lang="es" data-theme="<?= e($theme->value) ?>" data-mode="<?= e($colorMode) ?>">
@@ -69,7 +67,7 @@ $logoutCsrf = $csrf->field('/logout');
                     </li>
                     <li>
                         <form class="inline-form" method="post" action="<?= Url::logout() ?>">
-                            <?= $logoutCsrf ?>
+                            <?= $csrf->field('/logout') ?>
                             <button type="submit" class="btn btn--ghost btn--sm">Salir</button>
                         </form>
                     </li>
@@ -90,8 +88,7 @@ $logoutCsrf = $csrf->field('/logout');
 <footer class="app-footer">
     <div class="app-footer__inner">
         <p>
-            Proyecto academico en equipo, UTSJR.
-            "Raju Technology" fue una empresa ficticia usada en la dinamica del curso.
+            OMNARA. Creado y desarrollado por Juan Carlos Barrón López.
         </p>
         <ul class="app-footer__links">
             <li><a href="<?= Url::docs() ?>">Documentacion</a></li>

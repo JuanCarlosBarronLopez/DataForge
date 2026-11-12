@@ -21,7 +21,7 @@ $pageLink = static fn(int $page): string => Url::activity().($page > 1 ? '?page=
     <div>
         <h1 class="page-head__title">Actividad</h1>
         <p class="page-head__lead">
-            Registro de las operaciones que han cambiado datos en tu espacio. <?= $total ?> entrada(s).
+            Registro de las operaciones que han cambiado datos en tu espacio. <?= (int) $total ?> entrada(s).
         </p>
     </div>
 </header>
@@ -53,8 +53,15 @@ $pageLink = static fn(int $page): string => Url::activity().($page > 1 ? '?page=
                             <tr>
                                 <td class="nowrap"><?= format_datetime((string) $entry['created_at']) ?></td>
                                 <td>
-                                    <?php $action = (string) $entry['action'] ?>
-                                    <span class="badge badge--<?= $action === 'delete' ? 'danger' : ($action === 'alter' ? 'warn' : 'accent') ?>">
+                                    <?php
+                                    $action = (string) $entry['action'];
+                            $tone           = match ($action) {
+                                'delete' => 'danger',
+                                'alter'  => 'warn',
+                                default  => 'accent',
+                            };
+                            ?>
+                                    <span class="badge badge--<?= e($tone) ?>">
                                         <?= e($action) ?>
                                     </span>
                                 </td>
@@ -73,7 +80,7 @@ $pageLink = static fn(int $page): string => Url::activity().($page > 1 ? '?page=
 
     <?php if ($pages > 1): ?>
         <nav class="pagination" aria-label="Paginacion de la bitacora">
-            <span>Pagina <?= $page ?> de <?= $pages ?></span>
+            <span>Pagina <?= (int) $page ?> de <?= (int) $pages ?></span>
             <div class="pagination__pages">
                 <?php if ($page > 1): ?>
                     <a class="pagination__link" href="<?= e($pageLink($page - 1)) ?>" rel="prev">Anterior</a>

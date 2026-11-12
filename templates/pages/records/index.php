@@ -47,7 +47,7 @@ $pageLink = static function (int $page) use ($database, $table, $search, $sort, 
     <div>
         <h1 class="page-head__title">Registros de <span class="mono"><?= e($table) ?></span></h1>
         <p class="page-head__lead">
-            <?= $total === 1 ? '1 registro' : $total.' registros' ?> en total.
+            <?= e($total === 1 ? '1 registro' : $total.' registros') ?> en total.
         </p>
     </div>
     <div class="btn-group">
@@ -140,7 +140,7 @@ $pageLink = static function (int $page) use ($database, $table, $search, $sort, 
 
     <?php if ($pages > 1): ?>
         <nav class="pagination" aria-label="Paginacion de registros">
-            <span>Pagina <?= $page ?> de <?= $pages ?></span>
+            <span>Pagina <?= (int) $page ?> de <?= (int) $pages ?></span>
             <div class="pagination__pages">
                 <?php if ($page > 1): ?>
                     <a class="pagination__link" href="<?= e($pageLink($page - 1)) ?>" rel="prev">Anterior</a>
@@ -150,7 +150,7 @@ $pageLink = static function (int $page) use ($database, $table, $search, $sort, 
         $end           = min($pages, $page + 2);
         for ($index = $start; $index <= $end; ++$index): ?>
                     <a class="pagination__link" href="<?= e($pageLink($index)) ?>"
-                       <?= $index === $page ? 'aria-current="page"' : '' ?>><?= $index ?></a>
+                       <?= $index === $page ? 'aria-current="page"' : '' ?>><?= (int) $index ?></a>
                 <?php endfor ?>
                 <?php if ($page < $pages): ?>
                     <a class="pagination__link" href="<?= e($pageLink($page + 1)) ?>" rel="next">Siguiente</a>

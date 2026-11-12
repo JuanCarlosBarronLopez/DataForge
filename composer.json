@@ -38,8 +38,10 @@
         "analyse": "phpstan analyse --memory-limit=1G",
         "lint": "php-cs-fixer fix --dry-run --diff",
         "format": "php-cs-fixer fix",
+        "check:escape": "php bin/check-escape.php",
         "check": [
             "@lint",
+            "@check:escape",
             "@analyse",
             "@test"
         ]

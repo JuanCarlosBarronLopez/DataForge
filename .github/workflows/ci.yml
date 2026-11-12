@@ -34,6 +34,9 @@ jobs:
       - name: Norma de estilo (PSR-12)
         run: composer lint
 
+      - name: Escape de la salida en las plantillas
+        run: composer check:escape
+
       - name: Analisis estatico (PHPStan nivel 8)
         run: composer analyse
 

@@ -7,7 +7,7 @@ No describe patrones que el codigo no implemente.
 
 ## 1. Vision general
 
-DataForge es una aplicacion PHP nativa con un unico punto de entrada y tres capas debajo:
+DataForge es una aplicacion PHP nativa con un unico punto de entrada y cuatro capas debajo:
 
 ```
 Navegador
@@ -32,17 +32,21 @@ Controller .................. coordina la peticion y la respuesta
 ```
 
 **Lo que el proyecto no es.** No es MVC: no hay un modelo, un controlador y una vista con
-contratos entre ellos. No es ADR: no hay acciones, despachadores ni manejadores de
+contratos entre ellos. No es el patron ADR: no hay acciones, despachadores ni manejadores de
 respuesta. No hay ORM, ni capa de eventos, ni inyeccion de dependencias por anotaciones.
 Afirmar cualquiera de esas cosas seria falso, asi que no se afirma.
 
 Lo que si es: un **front controller con enrutador, cadena de middleware y capas
-servicio/repositorio**. El nombre correcto para eso es "aplicacion por capas" (layered
-architecture), y es lo que se aplica.
+servicio/repositorio**, mas un canal de eventos en vivo que alimenta el panel. El nombre
+correcto para eso es "aplicacion por capas" (layered architecture), y es lo que se aplica.
 
 ---
 
 ## 2. Decisiones y su porque
+
+Cada decision sigue el mismo formato: que se decidio, por que, y que consecuencia tiene. Es el
+mismo formato que usan los registros de decision (ADR) en la practica, pero aqui viven en el
+documento en lugar de en archivos sueltos.
 
 ### 2.1 Sin framework
 
@@ -82,7 +86,8 @@ leer de un vistazo y que el middleware se declare junto a la ruta que protege.
 
 **Consecuencia.** Los nombres de base de datos y de tablas viajan en la URL. Como los
 identificadores no pueden llevar caracteres especiales, se validan contra una lista blanca
-antes de interpolarlos en SQL (ver 2.6).
+antes de interpolarlos en SQL (ver 2.6). Los parametros numericos se convierten al tipo que
+declara la accion antes de invocarla.
 
 ### 2.4 Middleware en dos niveles
 
@@ -176,8 +181,8 @@ la regeneracion evita el fijado de sesion: si alguien captura el identificador a
 acceso, el identificador valido despues del acceso es distinto.
 
 **Consecuencia.** En un despliegue con varias instancias, las sesiones no se comparten. Con
-un solo contenedor de aplicacion (el caso de Render en el plan gratuito) no hay problema. Con
-varias instancias habria que migrar a Redis o a una tabla.
+un solo contenedor de aplicacion no hay problema. Con varias instancias habria que migrar a
+Redis o a una tabla.
 
 ### 2.10 Tokens CSRF por accion
 
@@ -220,17 +225,46 @@ limite de filas evita que un `SELECT` sin `WHERE` tumbe el servidor.
 **Consecuencia.** Para cambiar datos hay que usar el CRUD de registros, que aplica las
 reglas de propiedad y deja rastro en la bitacora.
 
-### 2.13 Plantillas en PHP plano
+### 2.13 Escape de la salida exigible
+
+**Decision.** Toda salida de las plantillas pasa por `e()`. `bin/check-escape.php` revisa las
+200 expresiones de `templates/` y falla la integracion continua si alguna imprime un dato sin
+escapar o sin una funcion del catalogo permitido.
+
+**Por que.** "Todos los datos se escapan" es una afirmacion que se puede comprobar o no
+comprobar. En la version 3.2 la afirmacion era falsa: `profile.php` y `header.php` inyectaban
+el nombre de usuario y la ruta del avatar sin escapar, y `set_table_form.php` metia nombres
+de columna en `innerHTML` con `json_encode` sin `JSON_HEX_TAG`.
+
+**Consecuencia.** El motor de plantillas sigue siendo PHP plano, pero el helper `e()` es la
+forma unica de imprimir datos y la comprobacion automatica cubre el resto. El coste es un
+script propio que hay que mantener junto al motor.
+
+### 2.14 Tiempo real con Server-Sent Events
+
+**Decision.** `GET /events` abre un canal SSE que envia el estado inicial y despues las
+entradas nuevas de la bitacora. `EventController` escribe el flujo con `Response::stream()` y
+`LiveFeed` produce el contenido.
+
+**Por que.** El panel tiene metricas que dependen de MySQL: contar filas de todas las tablas
+en cada recarga es caro y el usuario ve numeros obsoletos. SSE es la solucion mas simple que
+no necesita librerias de cliente ni un servidor de eventos aparte: es HTTP nativo con
+`text/event-stream`.
+
+**Consecuencia.** Cada canal abierto ocupa un proceso de PHP durante su duracion. Por eso la
+conexion se cierra a los cinco minutos y el navegador la reabre solo, y por eso la sesion se
+libera con `session_write_close()` antes de entrar al bucle: si no, el archivo de sesion
+quedaria bloqueado y las demas peticiones del mismo usuario esperarian.
+
+### 2.15 Plantillas en PHP plano
 
 **Decision.** Las plantillas son archivos PHP con `extract()` y un entorno con `$content`,
 `$pageTitle`, `$currentUser` y `$flash`.
 
-**Por que.** Es lo que permite usar PHP en la vista sin un motor de plantillas mas. El
-escape se hace con el helper `e()`.
+**Por que.** Es lo que permite usar PHP en la vista sin un motor de plantillas mas.
 
-**Consecuencia.** El escape es responsabilidad de quien escribe la plantilla. La mitigacion es
-que el helper `e()` esta disponible en todas las vistas y que las pruebas de integracion
-comprueban que un nombre de usuario con `<script>` no llega sin escapar.
+**Consecuencia.** El escape es responsabilidad de quien escribe la plantilla, mitigado por la
+comprobacion automatica de 2.13.
 
 ---
 
@@ -282,9 +316,14 @@ php bin/console migrate
 php bin/console migrate:status
 ```
 
-La version 3.2 creaba el esquema con `CREATE TABLE IF NOT EXISTS` dentro del propio registro
-y anadia columnas con `SHOW COLUMNS` a mano. Eso no tiene historial, no se puede deshacer y
-dos instalaciones podian divergir.
+**Sobre la "auto-migracion".** La version 3.2 creaba el esquema dentro del propio registro de
+usuario: cada alta de cuenta ejecutaba `CREATE TABLE IF NOT EXISTS` y comprobaba con
+`SHOW COLUMNS` que faltara alguna columna. Eso no deja historial, no se puede deshacer y dos
+instalaciones podian divergir. Ademas corria en una peticion publica sin autenticacion.
+
+En la v4 el esquema se crea con migraciones versionadas y de forma idempotente, y se aplican
+al arrancar el contenedor (`docker/entrypoint.sh`) o a mano. Es automatica en el sentido de
+que no hay que intervenir, pero es una operacion con historial y con rollback.
 
 ---
 
@@ -318,6 +357,9 @@ Todo lo demas se construye por reflexion.
 7. El controlador pide los datos al servicio y devuelve una `Response`.
 8. `View::render()` produce el HTML con el layout.
 
+La ruta `/events` es la excepcion: devuelve una respuesta en flujo y el bucle de eventos
+ocupa la peticion hasta que se agota el tiempo maximo.
+
 ---
 
 ## 7. Decisiones pendientes
@@ -331,3 +373,5 @@ No son errores, son decisiones pendientes de resolver:
   siguiente paso natural, y el enrutador y los servicios ya estan preparados para eso.
 - **Sin verificacion de correo.** Requiere un proveedor de correo.
 - **Sin cola de trabajos.** Las exportaciones grandes se generan de forma sincrona.
+- **Escalado del canal de eventos.** Con muchas conexiones simultaneas, el patron de una
+  conexion por proceso se queda corto.
